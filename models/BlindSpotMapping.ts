@@ -1,19 +1,57 @@
+import { jsPDF } from 'jspdf'
+import html2canvas from 'html2canvas'
+
 type Point = { x: number; y: number };
 
-export default class BlindSpotMappingTest {
+class BlindSpotMappingTest {
   private canvas: HTMLCanvasElement
+  private readonly id: string
+  private readonly polygonColor: string
   private ctx: CanvasRenderingContext2D
-  private stimulusPosition: Point
+  private readonly stimulusPosition: Point
   private blindSpotLeft: Point[]
   private blindSpotRight: Point[]
-
-  constructor (canvas: HTMLCanvasElement) {
+  private leftPolygon: Path2D | null
+  private rightPolygon: Path2D | null
+  private leftButton: HTMLElement
+  private rightButton: HTMLElement
+  private resetButton: HTMLElement
+  private leftPolygonArea: HTMLElement
+  private rightPolygonArea: HTMLElement
+  private leftDotDistance: HTMLElement
+  private rightDotDistance: HTMLElement
+  constructor (
+    canvas: HTMLCanvasElement,
+    id: string,
+    polygonColor: string,
+    leftButton: HTMLElement,
+    rightButton: HTMLElement,
+    resetButton: HTMLElement,
+    leftPolygonArea: HTMLElement,
+    rightPolygonArea: HTMLElement,
+    leftDotDistance: HTMLElement,
+    rightDotDistance: HTMLElement
+  ) {
     this.canvas = canvas
+    this.id = id
+    this.polygonColor = polygonColor
     this.ctx = canvas.getContext('2d') as CanvasRenderingContext2D
     this.stimulusPosition = { x: this.canvas.width / 2, y: this.canvas.height / 2 }
     this.blindSpotLeft = []
     this.blindSpotRight = []
+    this.leftPolygon = null
+    this.rightPolygon = null
+    this.leftButton = leftButton
+    this.rightButton = rightButton
+    this.resetButton = resetButton
+    this.leftPolygonArea = leftPolygonArea
+    this.rightPolygonArea = rightPolygonArea
+    this.leftDotDistance = leftDotDistance
+    this.rightDotDistance = rightDotDistance
+
     this.setupEventListeners()
+    this.drawStimulus()
+    this.loadState()
   }
 
   drawStimulus (): void {
@@ -42,52 +80,60 @@ export default class BlindSpotMappingTest {
     let rightClicks = 0
 
     this.canvas.addEventListener('click', (event: MouseEvent) => {
-      const boundingRect = this.canvas.getBoundingClientRect()
-      const clickPosition: Point = {
-        x: event.clientX - boundingRect.left,
-        y: event.clientY - boundingRect.top
-      }
-      if (this.isLeftSide(clickPosition)) {
-        if (leftClicks < 8) { // limit to 8 dots on the left side
-          this.blindSpotLeft.push(clickPosition)
-          leftClicks++
+      if (!this.leftPolygon || !this.rightPolygon) { // Only add new dots if polygon has not been generated
+        const boundingRect = this.canvas.getBoundingClientRect()
+        const clickPosition: Point = {
+          x: event.clientX - boundingRect.left,
+          y: event.clientY - boundingRect.top
+        }
+        if (this.isLeftSide(clickPosition)) {
+          if (leftClicks < 8) { // limit to 8 dots on the left side
+            this.blindSpotLeft.push(clickPosition)
+            leftClicks++
+            this.renderDots()
+          }
+        } else if (rightClicks < 8) { // limit to 8 dots on the right side
+          this.blindSpotRight.push(clickPosition)
+          rightClicks++
           this.renderDots()
         }
-      } else if (rightClicks < 8) { // limit to 8 dots on the right side
-        this.blindSpotRight.push(clickPosition)
-        rightClicks++
-        this.renderDots()
       }
     })
 
-    document.querySelector('#left-button')!.addEventListener('click', () => {
-      if (leftClicks === 8) { // only generate polygon if 8 dots have been added on the left side
-        const leftPolygon = this.generatePolygon(this.blindSpotLeft)
-        this.renderPolygon(leftPolygon!, 'rgba(255, 0, 0, 0.5)')
-        document.querySelector('#left-area')!.textContent = `Left area: ${this.calculateArea(this.blindSpotLeft)} cm2`
-        document.querySelector('#left-distance')!.textContent = `Distance from stimulus: ${this.calculateDistance(this.blindSpotLeft[0], this.stimulusPosition)} cm`
+    this.leftButton.addEventListener('click', () => {
+      if (this.blindSpotLeft.length === 8 && !this.leftPolygon) { // Only generate polygon if 8 dots have been added on the left side and polygon has not been generated
+        this.leftPolygon = this.generatePolygon(this.blindSpotLeft)
+        this.renderPolygon(this.leftPolygon!, this.polygonColor)
+        this.leftPolygonArea.textContent = `Left area: ${this.calculateArea(this.blindSpotLeft)} cm2`
+        this.leftDotDistance.textContent = `Distance from stimulus: ${this.calculateDistance(this.blindSpotLeft[0], this.stimulusPosition)} cm`
+        this.saveState()
       }
     })
 
-    document.querySelector('#right-button')!.addEventListener('click', () => {
-      if (rightClicks === 8) { // only generate polygon if 8 dots have been added on the right side
-        const rightPolygon = this.generatePolygon(this.blindSpotRight)
-        this.renderPolygon(rightPolygon!, 'rgba(0, 255, 0, 0.5)')
-        document.querySelector('#right-area')!.textContent = `Right area: ${this.calculateArea(this.blindSpotRight)} cm2`
-        document.querySelector('#right-distance')!.textContent = `Distance from stimulus: ${this.calculateDistance(this.blindSpotRight[0], this.stimulusPosition)} cm`
-      }
+    this.rightButton.addEventListener('click', () => {
     })
+    if (this.blindSpotRight.length === 8 && !this.rightPolygon) {
+      this.rightPolygon = this.generatePolygon(this.blindSpotRight)
+      this.renderPolygon(this.rightPolygon!, this.polygonColor)
+      this.rightPolygonArea.textContent = `Right area: ${this.calculateArea(this.blindSpotRight)} cm2`
+      this.rightDotDistance.textContent = `Distance from stimulus: ${this.calculateDistance(this.blindSpotRight[0], this.stimulusPosition)} cm`
+      this.saveState()
+    }
 
-    document.querySelector('#reset-button')!.addEventListener('click', () => {
+    this.resetButton.addEventListener('click', () => {
       leftClicks = 0
       rightClicks = 0
       this.blindSpotLeft = []
       this.blindSpotRight = []
+      this.leftPolygon = null
+      this.rightPolygon = null
       this.renderDots()
-      document.querySelector('#left-area')!.textContent = ''
-      document.querySelector('#right-area')!.textContent = ''
-      document.querySelector('#left-distance')!.textContent = ''
-      document.querySelector('#right-distance')!.textContent = ''
+      this.leftPolygonArea.textContent = ''
+      this.rightPolygonArea.textContent = ''
+      this.leftDotDistance.textContent = ''
+      this.rightDotDistance.textContent = ''
+      // Save state to local storage
+      this.saveState()
     })
   }
 
@@ -131,10 +177,282 @@ export default class BlindSpotMappingTest {
     this.drawStimulus()
     this.blindSpotLeft.forEach(dot => this.drawDot(dot.x, dot.y, 'black', 3))
     this.blindSpotRight.forEach(dot => this.drawDot(dot.x, dot.y, 'black', 3))
+    if (this.leftPolygon) {
+      this.renderPolygon(this.leftPolygon, this.polygonColor)
+    }
+    if (this.rightPolygon) {
+      this.renderPolygon(this.rightPolygon, this.polygonColor)
+    }
   }
 
   renderPolygon (polygon: Path2D, color: string): void {
     this.ctx.fillStyle = color
     this.ctx.fill(polygon)
+  }
+
+  fillCurrentCanvas (): void {
+    this.renderDots()
+    if (this.leftPolygon) {
+      this.leftPolygonArea.textContent = `Left area: ${this.calculateArea(this.blindSpotLeft)} cm2`
+      this.leftDotDistance.textContent = `Distance from stimulus: ${this.calculateDistance(this.blindSpotLeft[0], this.stimulusPosition)} cm`
+    }
+    if (this.rightPolygon) {
+      this.rightPolygonArea.textContent = `Right area: ${this.calculateArea(this.blindSpotRight)} cm2`
+      this.rightDotDistance.textContent = `Distance from stimulus: ${this.calculateDistance(this.blindSpotRight[0], this.stimulusPosition)} cm`
+    }
+  }
+
+  saveState (): void {
+    const state = {
+      blindSpotLeft: this.blindSpotLeft,
+      blindSpotRight: this.blindSpotRight,
+      leftPolygon: this.leftPolygon,
+      rightPolygon: this.rightPolygon
+    }
+    localStorage.setItem(`BlindSpotMappingTest-${this.id}`, JSON.stringify(state))
+  }
+
+  loadState (): void {
+    const savedState = localStorage.getItem(`BlindSpotMappingTest-${this.id}`)
+    if (savedState) {
+      const state = JSON.parse(savedState)
+      this.blindSpotLeft = state.blindSpotLeft
+      this.blindSpotRight = state.blindSpotRight
+      this.leftPolygon = state.leftPolygon ? this.generatePolygon(this.blindSpotLeft) : null
+      this.rightPolygon = state.rightPolygon ? this.generatePolygon(this.blindSpotRight) : null
+      this.clearCanvas()
+      this.drawStimulus()
+      this.fillCurrentCanvas()
+    }
+  }
+}
+
+export default class DualBlindSpotMappingTest {
+  private tests: BlindSpotMappingTest[]
+  private readonly canvas1: HTMLCanvasElement
+  private readonly canvas2: HTMLCanvasElement
+  private superposedCanvas: HTMLCanvasElement
+  private superposedCanvasCtx: CanvasRenderingContext2D
+  private readonly leftPolygonArea1: HTMLElement
+  private readonly rightPolygonArea1: HTMLElement
+  private readonly leftDotDistance1: HTMLElement
+  private readonly rightDotDistance1: HTMLElement
+  private readonly leftPolygonArea2: HTMLElement
+  private readonly rightPolygonArea2: HTMLElement
+  private readonly leftDotDistance2: HTMLElement
+  private readonly rightDotDistance2: HTMLElement
+  private readonly leftAreaDifference: HTMLElement
+  private readonly rightAreaDifference: HTMLElement
+  private readonly leftDistanceDifference: HTMLElement
+  private readonly rightDistanceDifference: HTMLElement
+  constructor (
+    id1: string,
+    id2: string,
+    polygonColor1: string,
+    polygonColor2: string,
+    canvas1: HTMLCanvasElement,
+    canvas2: HTMLCanvasElement,
+    leftButton1: HTMLElement,
+    leftButton2: HTMLElement,
+    rightButton1: HTMLElement,
+    rightButton2: HTMLElement,
+    resetButton1: HTMLElement,
+    resetButton2: HTMLElement,
+    leftPolygonArea1: HTMLElement,
+    rightPolygonArea1: HTMLElement,
+    leftDotDistance1: HTMLElement,
+    rightDotDistance1: HTMLElement,
+    leftPolygonArea2: HTMLElement,
+    rightPolygonArea2: HTMLElement,
+    leftDotDistance2: HTMLElement,
+    rightDotDistance2: HTMLElement,
+    leftAreaDifference: HTMLElement,
+    rightAreaDifference: HTMLElement,
+    leftDistanceDifference: HTMLElement,
+    rightDistanceDifference: HTMLElement,
+    superposedCanvas: HTMLCanvasElement
+  ) {
+    this.tests = [
+      new BlindSpotMappingTest(canvas1, id1, polygonColor1, leftButton1, rightButton1, resetButton1, leftPolygonArea1, rightPolygonArea1, leftDotDistance1, rightDotDistance1),
+      new BlindSpotMappingTest(canvas2, id2, polygonColor2, leftButton2, rightButton2, resetButton2, leftPolygonArea2, rightPolygonArea2, leftDotDistance2, rightDotDistance2)
+    ]
+    this.canvas1 = canvas1
+    this.canvas2 = canvas2
+    this.superposedCanvas = superposedCanvas
+    this.leftPolygonArea1 = leftPolygonArea1
+    this.rightPolygonArea1 = rightPolygonArea1
+    this.leftDotDistance1 = leftDotDistance1
+    this.rightDotDistance1 = rightDotDistance1
+    this.leftPolygonArea2 = leftPolygonArea2
+    this.rightPolygonArea2 = rightPolygonArea2
+    this.leftDotDistance2 = leftDotDistance2
+    this.rightDotDistance2 = rightDotDistance2
+    this.leftAreaDifference = leftAreaDifference
+    this.rightAreaDifference = rightAreaDifference
+    this.leftDistanceDifference = leftDistanceDifference
+    this.rightDistanceDifference = rightDistanceDifference
+    this.superposedCanvasCtx = superposedCanvas.getContext('2d') as CanvasRenderingContext2D
+    this.renderSuperposedCanvas()
+    this.setupEventListeners()
+    this.updateDifferenceText()
+  }
+
+  private setupEventListeners (): void {
+    this.leftPolygonArea1.addEventListener('click', () => {
+      this.updateDifferenceText()
+      this.renderSuperposedCanvas()
+    })
+
+    this.rightPolygonArea1.addEventListener('click', () => {
+      this.updateDifferenceText()
+      this.renderSuperposedCanvas()
+    })
+
+    this.leftDotDistance1.addEventListener('click', () => {
+      this.updateDifferenceText()
+      this.renderSuperposedCanvas()
+    })
+
+    this.rightDotDistance1.addEventListener('click', () => {
+      this.updateDifferenceText()
+      this.renderSuperposedCanvas()
+    })
+
+    this.leftPolygonArea2.addEventListener('click', () => {
+      this.updateDifferenceText()
+      this.renderSuperposedCanvas()
+    })
+
+    this.rightPolygonArea2.addEventListener('click', () => {
+      this.updateDifferenceText()
+      this.renderSuperposedCanvas()
+    })
+
+    this.leftDotDistance2.addEventListener('click', () => {
+      this.updateDifferenceText()
+      this.renderSuperposedCanvas()
+    })
+
+    this.rightDotDistance2.addEventListener('click', () => {
+      this.updateDifferenceText()
+      this.renderSuperposedCanvas()
+    })
+  }
+
+  private renderSuperposedCanvas (): void {
+    this.superposedCanvasCtx.clearRect(0, 0, this.superposedCanvas.width, this.superposedCanvas.height)
+
+    // Draw the first canvas onto the superposed canvas.
+    this.superposedCanvasCtx.globalAlpha = 0.5
+    this.superposedCanvasCtx.drawImage(this.canvas1, 0, 0)
+
+    // Draw the second canvas onto the superposed canvas.
+    this.superposedCanvasCtx.globalAlpha = 0.5
+    this.superposedCanvasCtx.drawImage(this.canvas2, 0, 0)
+  }
+
+  private updateDifferenceText (): void {
+    if (
+      this.leftPolygonArea1.textContent &&
+      this.leftPolygonArea2.textContent
+    ) {
+      const leftArea1 = parseFloat(this.leftPolygonArea1.textContent.split(': ')[1])
+      const leftArea2 = parseFloat(this.leftPolygonArea2.textContent.split(': ')[1])
+      const areaDiff = Math.abs(leftArea1 - leftArea2).toFixed(2)
+      this.leftAreaDifference.textContent = `Left Area difference: ${areaDiff} cm2`
+    }
+
+    if (
+      this.rightPolygonArea1.textContent &&
+      this.rightPolygonArea2.textContent
+    ) {
+      const leftArea1 = parseFloat(this.rightPolygonArea1.textContent.split(': ')[1])
+      const leftArea2 = parseFloat(this.rightPolygonArea2.textContent.split(': ')[1])
+      const areaDiff = Math.abs(leftArea1 - leftArea2).toFixed(2)
+      this.rightAreaDifference.textContent = `Right Area difference: ${areaDiff} cm2`
+    }
+
+    if (
+      this.leftDotDistance1.textContent &&
+      this.leftDotDistance2.textContent
+    ) {
+      const leftDistance1 = parseFloat(this.leftDotDistance1.textContent.split(': ')[1])
+      const leftDistance2 = parseFloat(this.leftDotDistance2.textContent.split(': ')[1])
+      const distanceDiff = Math.abs(leftDistance1 - leftDistance2).toFixed(2)
+      this.leftDistanceDifference.textContent = `Left Distance difference: ${distanceDiff} cm`
+    }
+
+    if (
+      this.rightDotDistance1.textContent &&
+      this.rightDotDistance2.textContent
+    ) {
+      const leftDistance1 = parseFloat(this.rightDotDistance1.textContent.split(': ')[1])
+      const leftDistance2 = parseFloat(this.rightDotDistance2.textContent.split(': ')[1])
+      const distanceDiff = Math.abs(leftDistance1 - leftDistance2).toFixed(2)
+      this.rightDistanceDifference.textContent = `Right Distance difference: ${distanceDiff} cm`
+    }
+  }
+
+  async exportPDF (): Promise<void> {
+    const doc = new jsPDF('l', 'mm', 'a4')
+
+    const exportCanvas = async (
+      canvas: HTMLCanvasElement,
+      xOffset: number,
+      yOffset = 10
+    ): Promise<void> => {
+      const canvasImage = await html2canvas(canvas)
+      const imageDataUrl = canvasImage.toDataURL('image/jpeg', 1.0)
+
+      doc.addImage(imageDataUrl, 'JPEG', xOffset, yOffset, 270, 270 * (canvas.height / canvas.width))
+    }
+
+    const pages = [{
+      canvas: this.canvas1,
+      title: 'Before the adjustment',
+      leftArea: this.leftPolygonArea1.textContent,
+      rightArea: this.rightPolygonArea1.textContent,
+      leftDistance: this.leftDotDistance1.textContent,
+      rightDistance: this.rightDotDistance1.textContent,
+      addPage: true
+    },
+    {
+      canvas: this.canvas2,
+      title: 'After the adjustment',
+      leftArea: this.leftPolygonArea2.textContent,
+      rightArea: this.rightPolygonArea2.textContent,
+      leftDistance: this.leftDotDistance2.textContent,
+      rightDistance: this.rightDotDistance2.textContent,
+      addPage: true
+    },
+    {
+      canvas: this.superposedCanvas,
+      title: 'Final comparison',
+      leftArea: this.leftAreaDifference.textContent,
+      rightArea: this.rightAreaDifference.textContent,
+      leftDistance: this.leftDistanceDifference.textContent,
+      rightDistance: this.rightDistanceDifference.textContent
+    }]
+
+    const textYOffset = 130
+
+    for (const page of pages) {
+      await exportCanvas(page.canvas, 10, 40)
+
+      doc.setFontSize(18)
+      doc.text(page.title, 10, 16)
+
+      doc.setFontSize(12)
+      doc.text(`${page.leftArea}`, 10, textYOffset)
+      doc.text(`${page.rightArea}`, 10, textYOffset + 6)
+      doc.text(`${page.leftDistance}`, 10, textYOffset + 12)
+      doc.text(`${page.rightDistance}`, 10, textYOffset + 18)
+
+      if (page.addPage) {
+        doc.addPage()
+      }
+    }
+
+    doc.save('blind_spot_mapping_test.pdf')
   }
 }
