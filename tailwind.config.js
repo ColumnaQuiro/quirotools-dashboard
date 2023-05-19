@@ -9,7 +9,20 @@ module.exports = {
     './app.vue'
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        white: '#FFFFFF',
+        black: '#000000',
+        brand: {
+          primary: '#8D5B4C',
+          secondary: '#69A297',
+          tertiary: '#F2B880',
+          quaternary: '#E7CFBC',
+          white: '#FFF4EC',
+          black: '#474747'
+        }
+      }
+    },
     container: {
       center: true,
       padding: {
@@ -22,18 +35,6 @@ module.exports = {
     },
     fontFamily: {
       sans: ['Montserrat', 'sans-serif']
-    },
-    colors: {
-      white: '#FFFFFF',
-      black: '#000000',
-      brand: {
-        primary: '#8D5B4C',
-        secondary: '#69A297',
-        tertiary: '#F2B880',
-        quaternary: '#E7CFBC',
-        white: '#FFF4EC',
-        black: '#474747'
-      }
     }
   },
   plugins: []
