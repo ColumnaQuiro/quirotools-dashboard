@@ -10,7 +10,9 @@
     :to="to"
     :href="href"
     :color="color"
-    elevation="0"
+    :type="type"
+    :flat="true"
+    :rounded="true"
     @click="click"
   >
     <slot />
@@ -56,6 +58,10 @@ interface Props {
    * Applies specified color to the control - it can be the name of material color (for example success or purple) or css color (#033 or rgba(255, 0, 0, 0.5))
    */
   color?: string
+  /**
+   * Designates the button type
+   */
+  type?: string
 }
 
 withDefaults(defineProps<Props>(), {
@@ -68,7 +74,8 @@ withDefaults(defineProps<Props>(), {
   variant: 'elevated',
   to: undefined,
   icon: false,
-  tag: 'button'
+  tag: 'button',
+  type: 'button'
 })
 
 const emit = defineEmits<{(e: 'click'): void }>()

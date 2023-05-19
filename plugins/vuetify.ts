@@ -1,4 +1,5 @@
 import { createVuetify } from 'vuetify'
+import { VDataTable } from 'vuetify/labs/VDataTable'
 
 const myCustomLightTheme = {
   dark: false,
@@ -19,6 +20,9 @@ const myCustomLightTheme = {
 
 export default defineNuxtPlugin((nuxtApp) => {
   const vuetify = createVuetify({
+    components: {
+      VDataTable
+    },
     defaults: {
       global: {
         ripple: false,
