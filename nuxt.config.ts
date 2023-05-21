@@ -35,7 +35,9 @@ export default defineNuxtConfig({
   vuefire: {
     auth: true,
     admin: {
-      serviceAccount: './serviceAccount.json'
+      serviceAccount: JSON.parse(
+        process.env.FIREBASE_SERVICE_ACCOUNT as string
+      )
     },
     config: {
       apiKey: process.env.FIREBASE_API_KEY,
