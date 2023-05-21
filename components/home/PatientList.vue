@@ -30,7 +30,7 @@ const { patients } = storeToRefs(patientsStore)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const goToPatient = (event, { item: patient }: {item:Ref<Patient>}) => {
   const { push } = useRouter()
-  push(`/patients/${patient.value.uid}`)
+  push(`/patients/${patient.raw.uid}`)
 }
 </script>
 
