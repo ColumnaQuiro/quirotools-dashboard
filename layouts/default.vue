@@ -16,9 +16,12 @@
 </template>
 <script setup lang="ts">
 import { Ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import { User } from '@firebase/auth'
 import { usePatientsStore } from '~/stores/patients'
 import { useChiropractorStore } from '~/stores/chiropractor'
 
+const { push } = useRouter()
 const patientsStore = usePatientsStore()
 const chiropractorStore = useChiropractorStore()
 await chiropractorStore.fetchChiropractor()
@@ -29,6 +32,23 @@ const sidePanelExpanded: Ref<boolean> = ref(false)
 const toggleSidePanelExpansion = (isExpanded: boolean) => {
   sidePanelExpanded.value = isExpanded
 }
+
+const isUserInFreeTrial = (user: User) => {
+  const sevenDaysUserTimestamp = user?.metadata?.creationTime && new Date(user.metadata.creationTime).getTime() + (7 * 24 * 60 * 60 * 1000)
+  if (!sevenDaysUserTimestamp) {
+    return false
+  }
+  return sevenDaysUserTimestamp > Date.now()
+}
+
+onMounted(async () => {
+  const user: User = await getCurrentUser()
+  const { chiropractor } = storeToRefs(chiropractorStore)
+
+  if (!isUserInFreeTrial(user) && !chiropractor.value?.hasPaid) {
+    push('/create-subscription')
+  }
+})
 </script>
 <style lang="scss">
 .layout__content {

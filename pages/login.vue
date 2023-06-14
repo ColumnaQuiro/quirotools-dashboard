@@ -5,19 +5,23 @@
         QuiroTools
       </div>
       <div class="mb-4">
-        <label for="email" class="block text-sm font-bold mb-2">Email:</label>
-        <input id="email" v-model="email" type="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Email">
+        <div class="mb-4">
+          <ct-components-input-text
+            v-model="email"
+            label="Email"
+            placeholder="user@gmail.com"
+            :rules="EMAIL_RULES"
+            type="email"
+          />
+        </div>
       </div>
       <div class="mb-6">
-        <label for="password" class="block text-sm font-bold mb-2">Password:</label>
-        <input
-          id="password"
+        <ct-components-input-text
           v-model="password"
+          label="Password"
+          :rules="REQUIRED_RULE"
           type="password"
-          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading
-tight focus:outline-none focus:shadow-outline"
-          placeholder="Password"
-        >
+        />
       </div>
       <ct-components-button ref="blindSpotTopLeftButton" type="submit" color="secondary" class="mx-auto">
         Sign In
@@ -38,9 +42,10 @@ tight focus:outline-none focus:shadow-outline"
 </template>
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { getAuth, signInWithEmailAndPassword } from '@firebase/auth'
+import { getAuth, signInWithEmailAndPassword, UserCredential } from '@firebase/auth'
 import { LAYOUTS } from '~/constants/layouts'
 import { STATICS_CDN } from '~/constants/urls'
+import { EMAIL_RULES, REQUIRED_RULE } from '~/constants/form-rules'
 
 definePageMeta({
   layout: LAYOUTS.LOGIN
@@ -52,9 +57,12 @@ const router = useRouter()
 const login = async () => {
   try {
     const auth = getAuth()
-    await signInWithEmailAndPassword(auth, email.value, password.value)
+    const user: UserCredential = await signInWithEmailAndPassword(auth, email.value, password.value)
+    if (!user.user.emailVerified) {
+      throw new Error('Your email is not verify. Please check you inbox to verify your email.')
+    }
     await router.push('/')
-  } catch (error) {
+  } catch (error: any) {
     errorMessage.value = error.message
   }
 }

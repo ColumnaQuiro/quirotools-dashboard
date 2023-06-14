@@ -7,11 +7,11 @@ module.exports = {
   extends: [
     '@nuxtjs/eslint-config-typescript'
   ],
-  // add your custom rules here
   rules: {
     'vue/no-v-html': 'off',
     'vue/multi-word-component-names': 'off',
-    'func-call-spacing': 'off'
+    'func-call-spacing': 'off',
+    'unused-imports/no-unused-imports': 'error'
   },
-  plugins: []
+  plugins: ['unused-imports']
 }
