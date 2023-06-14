@@ -54,6 +54,12 @@ export default defineNuxtConfig({
       autoprefixer: {}
     }
   },
+  runtimeConfig: {
+    public: {
+      stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+      baseURL: process.env.NODE_ENV === 'development' ? 'http://localhost:3000/' : 'https://chiro-tools.com/'
+    }
+  },
   build: {
     transpile: ['vuetify']
   },
