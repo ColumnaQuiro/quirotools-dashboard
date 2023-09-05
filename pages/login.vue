@@ -1,55 +1,63 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen">
-    <form class="md:w-[600px] w-full bg-white shadow-md rounded-2xl p-6 md:mx-0 mx-4" @submit.prevent="login">
-      <div class="text-2xl text-brand-secondary text-center font-semibold pb-6">
-        QuiroTools
-      </div>
-      <div class="mb-4">
+  <NuxtLayout name="login">
+    <div class="flex items-center justify-center min-h-screen">
+      <form class="md:w-[600px] w-full bg-white shadow-md rounded-2xl p-6 md:mx-0 mx-4" @submit.prevent="login">
+        <div class="text-2xl text-brand-secondary text-center font-semibold pb-6">
+          ChiroTools
+        </div>
         <div class="mb-4">
+          <div class="mb-4">
+            <ct-components-input-text
+              v-model="email"
+              label="Email"
+              placeholder="user@gmail.com"
+              :rules="EMAIL_RULES"
+              type="email"
+            />
+          </div>
+        </div>
+        <div class="mb-6">
           <ct-components-input-text
-            v-model="email"
-            label="Email"
-            placeholder="user@gmail.com"
-            :rules="EMAIL_RULES"
-            type="email"
+            v-model="password"
+            label="Password"
+            :rules="REQUIRED_RULE"
+            type="password"
           />
         </div>
-      </div>
-      <div class="mb-6">
-        <ct-components-input-text
-          v-model="password"
-          label="Password"
-          :rules="REQUIRED_RULE"
-          type="password"
-        />
-      </div>
-      <ct-components-button ref="blindSpotTopLeftButton" type="submit" color="secondary" class="mx-auto">
-        Sign In
-      </ct-components-button>
-      <div v-if="errorMessage" class="mt-4 text-red-500 text-sm">
-        {{ errorMessage }}
-      </div>
-      <div class="flex justify-center items-end pt-8">
-        <div class="text-sm text-brand-tertiary font-semibold pr-1">
-          by
+        <ct-components-button ref="blindSpotTopLeftButton" type="submit" color="secondary" class="mx-auto">
+          Sign In
+        </ct-components-button>
+        <div v-if="errorMessage" class="mt-4 text-red-500 text-sm">
+          {{ errorMessage }}
         </div>
-        <div>
-          <v-img :src="`${STATICS_CDN}logo/logo-color.webp`" :width="65" alt="ColumnaQuiro" class="mx-auto" />
+        <div class="flex justify-center items-end pt-8">
+          <div class="text-sm text-brand-tertiary font-semibold pr-1">
+            by
+          </div>
+          <div>
+            <v-img :src="`${STATICS_CDN}logo/logo-color.webp`" :width="65" alt="ColumnaQuiro" class="mx-auto" />
+          </div>
         </div>
-      </div>
-    </form>
-  </div>
+      </form>
+    </div>
+  </NuxtLayout>
 </template>
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { getAuth, signInWithEmailAndPassword, UserCredential } from '@firebase/auth'
-import { LAYOUTS } from '~/constants/layouts'
+import {
+  browserLocalPersistence,
+  getAuth,
+  signInWithEmailAndPassword,
+  UserCredential
+} from '@firebase/auth'
+import { useFirebaseAuth } from 'vuefire'
 import { STATICS_CDN } from '~/constants/urls'
 import { EMAIL_RULES, REQUIRED_RULE } from '~/constants/form-rules'
 
 definePageMeta({
-  layout: LAYOUTS.LOGIN
+  layout: false
 })
+
 const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
@@ -57,6 +65,7 @@ const router = useRouter()
 const login = async () => {
   try {
     const auth = getAuth()
+    await useFirebaseAuth()?.setPersistence(browserLocalPersistence)
     const user: UserCredential = await signInWithEmailAndPassword(auth, email.value, password.value)
     if (!user.user.emailVerified) {
       throw new Error('Your email is not verify. Please check you inbox to verify your email.')

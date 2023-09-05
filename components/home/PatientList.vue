@@ -20,7 +20,7 @@ import { storeToRefs } from 'pinia'
 import { usePatientsStore } from '~/stores/patients'
 import { Patient } from '~/types/patient'
 
-const itemsPerPage = ref(5)
+const itemsPerPage: Ref<number> = ref(5)
 const headers = [
   { title: 'Name', key: 'name' },
   { title: 'Last Name', key: 'lastName' }

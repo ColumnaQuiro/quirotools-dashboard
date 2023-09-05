@@ -67,13 +67,17 @@ import { Patient } from '~/types/patient'
 definePageMeta({
   middleware: ['auth']
 })
-const openDialog:Ref<boolean> = ref(false)
-const name:Ref<string> = ref('')
-const lastName:Ref<string> = ref('')
-const onCreatePatientButtonClicked = () => { openDialog.value = true }
+
+const openDialog: Ref<boolean> = ref(false)
+const name: Ref<string> = ref('')
+const lastName: Ref<string> = ref('')
+
+const onCreatePatientButtonClicked = () => {
+  openDialog.value = true
+}
 const createPatient = async () => {
   const patientsStore = usePatientsStore()
-  const patient:Partial<Patient> = {
+  const patient: Partial<Patient> = {
     name: name.value,
     lastName: lastName.value
   }
@@ -82,4 +86,5 @@ const createPatient = async () => {
   lastName.value = ''
   openDialog.value = false
 }
+
 </script>

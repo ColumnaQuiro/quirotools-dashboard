@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="text-3xl pb-6">
-      {{ patient?.name }}
-      {{ patient?.lastName }}
+      {{ currentPatient?.name }}
+      {{ currentPatient?.lastName }}
     </div>
     <ct-components-blind-spot />
   </div>
@@ -10,6 +10,7 @@
 
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import { usePatientsStore } from '~/stores/patients'
 
 definePageMeta({
@@ -18,8 +19,9 @@ definePageMeta({
 
 const { params } = useRoute()
 const patientId = params.id as string
-
 const patientsStore = usePatientsStore()
-patientsStore.setCurrentPatient(patientId)
-const patient = patientsStore.currentPatient
+const { currentPatient } = storeToRefs(patientsStore)
+onMounted(() => {
+  patientsStore.setCurrentPatient(patientId)
+})
 </script>
