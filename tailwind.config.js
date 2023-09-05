@@ -20,6 +20,12 @@ module.exports = {
           quaternary: '#E7CFBC',
           white: '#FFF4EC',
           black: '#474747'
+        },
+        'brand-light': {
+          primary: '#8D5B4C80',
+          secondary: '#69A29780',
+          tertiary: '#F2B88080',
+          quaternary: '#E7CFBC80'
         }
       }
     },

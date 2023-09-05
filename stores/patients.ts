@@ -64,13 +64,13 @@ export const usePatientsStore = defineStore('patients', () => {
   }
 
   async function updatePatient (patient: Partial<Patient>, id: string | null = null) {
-    const patientId = id || currentPatient.value.uid
-    const patientDocRef = doc(db, 'patients', patientId)
-    await setDoc(patientDocRef, patient, { merge: true })
+    const patientId = id || currentPatient.value?.uid
+    const patientDocRef = patientId && doc(db, 'patients', patientId)
+    patientDocRef && await setDoc(patientDocRef, patient, { merge: true })
   }
 
   function setCurrentPatient (id: string) {
-    currentPatient.value = patients.value.find(patient => patient.uid === id)
+    currentPatient.value = patients.value.find(patient => patient.uid === id) ?? null
   }
 
   return {

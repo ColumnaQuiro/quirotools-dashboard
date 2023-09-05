@@ -1,7 +1,8 @@
 import { jsPDF } from 'jspdf'
 import html2canvas from 'html2canvas'
+import { storeToRefs } from 'pinia'
 import { usePatientsStore } from '~/stores/patients'
-
+import type { Patient, BlindSpot, BlindSpotState } from '~/types/patient'
 type Point = { x: number; y: number };
 
 class BlindSpotMappingTest {
@@ -21,6 +22,7 @@ class BlindSpotMappingTest {
   private rightPolygonArea: HTMLElement
   private leftDotDistance: HTMLElement
   private rightDotDistance: HTMLElement
+
   constructor (
     canvas: HTMLCanvasElement,
     id: string,
@@ -199,28 +201,31 @@ class BlindSpotMappingTest {
   }
 
   saveState (): void {
-    const state = {
+    const state: BlindSpotState = {
       blindSpotLeft: this.blindSpotLeft,
       blindSpotRight: this.blindSpotRight,
       leftPolygon: this.leftPolygon,
       rightPolygon: this.rightPolygon
     }
     const patientsStore = usePatientsStore()
-    const blindSpotMappingState = {
-      [`blindSpotMapping-${this.id}`]: JSON.stringify(state)
+    const blindSpotMappingState: Partial<Patient> = {
+      blindSpot: {
+        [this.id as keyof BlindSpot]: JSON.stringify(state)
+      }
     }
     patientsStore.updatePatient(blindSpotMappingState)
   }
 
   loadState (): void {
     const patientsStore = usePatientsStore()
-    const blindSpotMappingState = patientsStore.currentPatient[`blindSpotMapping-${this.id}`]
-    if (blindSpotMappingState) {
-      const state = JSON.parse(blindSpotMappingState)
-      this.blindSpotLeft = state.blindSpotLeft
-      this.blindSpotRight = state.blindSpotRight
-      this.leftPolygon = state.leftPolygon ? this.generatePolygon(this.blindSpotLeft) : null
-      this.rightPolygon = state.rightPolygon ? this.generatePolygon(this.blindSpotRight) : null
+    const { currentPatient } = storeToRefs(patientsStore)
+    const blindSpotStateString = currentPatient.value?.blindSpot?.[this.id as keyof BlindSpot]
+    if (blindSpotStateString) {
+      const blindSpotState: BlindSpotState = JSON.parse(blindSpotStateString)
+      this.blindSpotLeft = blindSpotState.blindSpotLeft
+      this.blindSpotRight = blindSpotState.blindSpotRight
+      this.leftPolygon = blindSpotState.leftPolygon ? this.generatePolygon(this.blindSpotLeft) : null
+      this.rightPolygon = blindSpotState.rightPolygon ? this.generatePolygon(this.blindSpotRight) : null
       this.clearCanvas()
       this.drawStimulus()
       this.fillCurrentCanvas()
@@ -252,6 +257,7 @@ export default class DualBlindSpotMappingTest {
   private readonly rightAreaDifference: HTMLElement
   private readonly leftDistanceDifference: HTMLElement
   private readonly rightDistanceDifference: HTMLElement
+
   constructor (
     id1: string,
     id2: string,
@@ -413,7 +419,7 @@ export default class DualBlindSpotMappingTest {
 
     const pages = [{
       canvas: this.canvas1,
-      title: 'Before the adjustment',
+      title: 'Before',
       leftArea: this.leftPolygonArea1.textContent,
       rightArea: this.rightPolygonArea1.textContent,
       leftDistance: this.leftDotDistance1.textContent,
@@ -422,7 +428,7 @@ export default class DualBlindSpotMappingTest {
     },
     {
       canvas: this.canvas2,
-      title: 'After the adjustment',
+      title: 'After',
       leftArea: this.leftPolygonArea2.textContent,
       rightArea: this.rightPolygonArea2.textContent,
       leftDistance: this.leftDotDistance2.textContent,
@@ -438,13 +444,29 @@ export default class DualBlindSpotMappingTest {
       rightDistance: this.rightDistanceDifference.textContent
     }]
 
-    const textYOffset = 130
+    const textYOffset = 160
 
-    for (const page of pages) {
+    doc.setFontSize(24)
+    const titleWidth = doc.getStringUnitWidth('Blind Spot Mapping') * doc.getFontSize() / doc.internal.scaleFactor
+    const titleXOffset = (doc.internal.pageSize.getWidth() - titleWidth) / 2
+    doc.setTextColor(105, 162, 151)
+    doc.text('Blind Spot Mapping', titleXOffset, 16)
+    doc.setTextColor(0)
+    doc.setFontSize(12)
+    doc.text('El punto ciego o "blindspot" es una herramienta para medir la velocidad de comunicación entre el cerebro y los ojos. \nSi la imagen que percibimos en el punto ciego es más grande, significa que la comunicación entre el cerebro y el ojo correspondiente \nes más lenta que en el otro lado, y que pueden existir interferencias nerviosas presentes en el sistema nervioso. \nLa presencia de interferencias nerviosas puede afectar la conexión entre el cerebro y el resto del cuerpo, lo que puede comprometer \nla salud en general y evitar que alcancemos un estado óptimo de bienestar.', 10, 40)
+    doc.addPage()
+    doc.setFontSize(24)
+
+    for (const [pageIndex, page] of pages.entries()) {
       await exportCanvas(page.canvas, 10, 40)
 
-      doc.setFontSize(18)
-      doc.text(page.title, 10, 16)
+      doc.setDrawColor(105, 162, 151) // Set border color to red
+      doc.setFillColor(255, 255, 255) // Set fill color to white
+      doc.setLineWidth(0.5) // Set border width
+
+      doc.setTextColor(71, 71, 71)
+      doc.setFontSize(16)
+      doc.text(page.title, 10, 30)
 
       doc.setFontSize(12)
       doc.text(`${page.leftArea}`, 10, textYOffset)

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { Ref } from 'vue'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { useFirestore } from 'vuefire'
+import { User } from '@firebase/auth'
 import { Chiropractor } from '~/types/chiropractor'
 import { ERRORS } from '~/constants/errors'
 
@@ -10,9 +11,10 @@ export const useChiropractorStore = defineStore('chiropractor', () => {
   const chiropractor: Ref<Chiropractor | null> = ref(null)
 
   async function fetchChiropractor () {
-    const userId = useCurrentUser()?.value?.uid
+    const user: User = await getCurrentUser()
+    const userId = user?.uid
     if (!userId) {
-      throw new Error(ERRORS.USER_NOT_LOGGED_IN)
+      return
     }
     const chiroDocRef = doc(db, 'chiropractors', userId)
     const currentChiro = await getDoc(chiroDocRef)

@@ -24,8 +24,6 @@ import { useChiropractorStore } from '~/stores/chiropractor'
 const { push } = useRouter()
 const patientsStore = usePatientsStore()
 const chiropractorStore = useChiropractorStore()
-await chiropractorStore.fetchChiropractor()
-await patientsStore.fetchPatients()
 
 const sidePanelExpanded: Ref<boolean> = ref(false)
 
@@ -41,12 +39,15 @@ const isUserInFreeTrial = (user: User) => {
   return sevenDaysUserTimestamp > Date.now()
 }
 
+await chiropractorStore.fetchChiropractor()
+await patientsStore.fetchPatients()
+
 onMounted(async () => {
   const user: User = await getCurrentUser()
   const { chiropractor } = storeToRefs(chiropractorStore)
 
-  if (!isUserInFreeTrial(user) && !chiropractor.value?.hasPaid) {
-    push('/create-subscription')
+  if (!isUserInFreeTrial(user) && chiropractor.value && !chiropractor.value?.hasPaid) {
+    return push('/create-subscription')
   }
 })
 </script>

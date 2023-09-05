@@ -5,9 +5,9 @@
     </div>
     <div class="relative">
       <div class="absolute top-5 left-5 font-semibold text-gray-400">
-        Before adjustment
+        Before
       </div>
-      <canvas ref="blindSpotTopCanvas" height="500" class="bg-white rounded-2xl mb-6" />
+      <canvas ref="blindSpotTopCanvas" height="600" class="bg-white rounded-2xl mb-6" />
       <div class="absolute bottom-5 left-5">
         <div ref="blindSpotTopLeftPolygonArea" class="text-sm" />
         <div ref="blindSpotTopLeftDotDistance" class="text-sm" />
@@ -31,9 +31,9 @@
 
     <div class="relative mt-24">
       <div class="absolute top-5 left-5 font-semibold text-gray-400">
-        After adjustment
+        After
       </div>
-      <canvas ref="blindSpotBottomCanvas" height="500" class="bg-white rounded-2xl mb-6" />
+      <canvas ref="blindSpotBottomCanvas" height="600" class="bg-white rounded-2xl mb-6" />
       <div class="absolute bottom-5 left-5">
         <div ref="blindSpotBottomLeftPolygonArea" class="text-sm" />
         <div ref="blindSpotBottomLeftDotDistance" class="text-sm" />
@@ -58,7 +58,7 @@
       <div class="absolute top-5 left-5 font-semibold text-gray-400">
         Comparison
       </div>
-      <canvas ref="blindSpotSuperposedCanvas" height="500" class="bg-white rounded-2xl mb-6" />
+      <canvas ref="blindSpotSuperposedCanvas" height="600" class="bg-white rounded-2xl mb-6" />
       <div class="absolute bottom-5 left-5">
         <div ref="blindSpotLeftAreaDifference" class="text-sm" />
         <div ref="blindSpotLeftDistanceDifference" class="text-sm" />
@@ -74,7 +74,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { Ref, watch } from 'vue'
+import { Ref } from 'vue'
 import { VBtn } from 'vuetify/components'
 import { storeToRefs } from 'pinia'
 import DualBlindSpotMappingTest from '~/models/BlindSpotMapping'
@@ -107,20 +107,16 @@ const blindSpotSuperposedCanvas: Ref<HTMLCanvasElement | null> = ref(null)
 let dualTest:DualBlindSpotMappingTest
 
 const { sidePanelWidth } = storeToRefs(useSidePanelStore())
-watch(sidePanelWidth, () => {
-  setCanvasWidth()
-  initDualBlindSpotMappingTest()
-})
 
 const initDualBlindSpotMappingTest = () => {
   if (!blindSpotTopCanvas.value || !blindSpotBottomCanvas.value || !blindSpotSuperposedCanvas.value) {
     return
   }
   dualTest = new DualBlindSpotMappingTest(
-    'blind-spot-top',
-    'blind-spot-bottom',
-    '#FFF4EC',
-    '#FFF4EC',
+    'top',
+    'bottom',
+    '#F2B880',
+    '#69A297',
       blindSpotTopCanvas.value as HTMLCanvasElement,
       blindSpotBottomCanvas.value as HTMLCanvasElement,
       blindSpotTopLeftButton.value?.$el as HTMLElement,
@@ -146,7 +142,7 @@ const initDualBlindSpotMappingTest = () => {
 }
 onMounted(() => {
   setCanvasWidth()
-  initDualBlindSpotMappingTest()
+  nextTick(() => initDualBlindSpotMappingTest())
 })
 
 const setCanvasWidth = () => {
