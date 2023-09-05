@@ -1,9 +1,9 @@
 <template>
-  <nuxt-link :to="to" class="page-button" :class="`${background} `">
+  <nuxt-link :to="to" class="page-button" :class="`${background}`">
     <div class="text-xl font-medium">
       {{ text }}
     </div>
-    <img :src="iconPath" :width="80" :alt="text">
+    <img :src="iconPath" :width="75" :alt="text">
   </nuxt-link>
 </template>
 
@@ -20,6 +20,7 @@ defineProps({
   },
   background: {
     type: String,
+    required: true,
     validator: (value: string) => ['bg-brand-light-tertiary'].includes(value)
   },
   to: {
@@ -31,6 +32,6 @@ defineProps({
 
 <style lang="scss" scoped>
 .page-button {
-  @apply pt-5 pb-1 text-center w-[170px] flex flex-col items-center rounded-2xl;
+  @apply py-5 text-center w-[190px] flex flex-col items-center rounded-2xl;
 }
 </style>
