@@ -27,6 +27,11 @@
         <ct-components-button ref="blindSpotTopLeftButton" type="submit" color="secondary" class="mx-auto">
           Sign In
         </ct-components-button>
+        <div class="text-center pt-4">
+          <nuxt-link to="/create-account" class="text-sm text-gray-400">
+            Don't have an account yet? Create one
+          </nuxt-link>
+        </div>
         <div v-if="errorMessage" class="mt-4 text-red-500 text-sm">
           {{ errorMessage }}
         </div>
