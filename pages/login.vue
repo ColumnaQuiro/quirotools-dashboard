@@ -28,7 +28,7 @@
           Sign In
         </ct-components-button>
         <div class="text-center pt-4">
-          <nuxt-link to="/create-account" class="text-sm text-gray-400">
+          <nuxt-link to="/create-account" class="text-sm text-gray-400 underline">
             Don't have an account yet? Create one
           </nuxt-link>
         </div>

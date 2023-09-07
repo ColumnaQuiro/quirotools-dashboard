@@ -58,13 +58,13 @@ const exportPosturesToPDF = () => {
       const titleWidth = doc.getStringUnitWidth('Análisis de la postura') * doc.getFontSize() / doc.internal.scaleFactor
       const titleXOffset = (doc.internal.pageSize.getWidth() - titleWidth) / 2
       doc.setTextColor(105, 162, 151)
-      doc.text('Análisis de lapostura', titleXOffset, 16)
+      doc.text('Posture analysis', titleXOffset, 16)
       doc.setTextColor(0)
       doc.setFontSize(12)
-      doc.text('Tu postura afecta y modera cada función fisiologica, desde la respiración hasta la producción hormonal.\nEl estrés crea tensiones, bloqueos y desequilibrios en tu cuerpo y postura.\nTener una buena postura es un signo de buena salud.', 10, 40)
+      doc.text('Our body has a system that helps us stay balanced when we\'re standing up. This system combines information from our inner ear, our eyes, and our sense of touch. But sometimes, interferences inside our body can mess up this system and make us feel off-balance. These problems often come from the pressures and stresses we face in life. It\'s important to understand that having the right posture is really important for our body. It affects how we breathe, how our hormones work, and even how our brain functions. Knowing this, having good posture isn\'t just about looking good; it\'s about keeping your body healthy and feeling better overall. It\'s not just about standing up straight; it\'s about living a healthier life!', 10, 40, { maxWidth: 190 })
 
-      await exportCanvas(postureAnalysisStore.postures?.left?.canvas, img1, 10, 70)
-      await exportCanvas(postureAnalysisStore.postures?.right?.canvas, img2, 110, 70)
+      await exportCanvas(postureAnalysisStore.postures?.left?.canvas, img1, 10, 90)
+      await exportCanvas(postureAnalysisStore.postures?.right?.canvas, img2, 110, 90)
 
       doc.save(`postura_${currentPatient.value.name}_${currentPatient.value.lastName}.pdf`)
     })

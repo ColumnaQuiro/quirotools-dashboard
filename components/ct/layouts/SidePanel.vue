@@ -59,7 +59,7 @@ const logout = async () => {
   const auth = getAuth()
   const { replace } = useRouter()
   await signOut(auth)
-  replace('/login')
+  await replace('/login')
 }
 onMounted(() => {
   setSidePanelWidth()

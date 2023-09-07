@@ -24,8 +24,15 @@
       <ct-components-button ref="blindSpotTopRightButton" class="mx-3" color="secondary">
         Generate Right Polygon
       </ct-components-button>
-      <ct-components-button ref="blindSpotTopResetButton" color="quaternary">
-        Reset
+      <ct-components-button
+        ref="blindSpotTopResetButton"
+        icon
+        size="small"
+        variant="flat"
+        color="tertiary"
+        class="mr-3"
+      >
+        <v-icon>mdi-eraser</v-icon>
       </ct-components-button>
     </div>
 
