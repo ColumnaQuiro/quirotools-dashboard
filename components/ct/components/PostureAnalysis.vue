@@ -24,7 +24,6 @@
         density="compact"
         :rounded="true"
         :single-line="true"
-        :loading="uploadingImage"
         class="mr-3"
         @update:model-value="handleFileUpload"
       />
@@ -165,6 +164,7 @@ const handleFileUpload = (files: File[]) => {
       ctx.drawImage(image, 0, 0, canvas?.width, canvas?.height)
       ctx.lineWidth = 2
       ctxRef.value = ctx
+      saveStateToLocalStorage()
     }
     image.src = e.target.result
   }

@@ -453,7 +453,7 @@ export default class DualBlindSpotMappingTest {
     doc.text('Blind Spot Mapping', titleXOffset, 16)
     doc.setTextColor(0)
     doc.setFontSize(12)
-    doc.text('El punto ciego o "blindspot" es una herramienta para medir la velocidad de comunicación entre el cerebro y los ojos. \nSi la imagen que percibimos en el punto ciego es más grande, significa que la comunicación entre el cerebro y el ojo correspondiente \nes más lenta que en el otro lado, y que pueden existir interferencias nerviosas presentes en el sistema nervioso. \nLa presencia de interferencias nerviosas puede afectar la conexión entre el cerebro y el resto del cuerpo, lo que puede comprometer \nla salud en general y evitar que alcancemos un estado óptimo de bienestar.', 10, 40)
+    doc.text('This blind spot is like a small area where you can\'t see things. It Looks at how your brain does clever tricks to fill in this missing information, sometimes creating optical illusions. It gives us information  about how flexible your nervous system is and how your brain can change and adapt on both sides. It\'s like your brain\'s way of being smart and making sure you can see things even when there\'s a gap. It gives us information about your nervous system adaptability and how it is functioning  and your brain plasticity!\n\nIt is not about seeing right , it is about having a nervous system functioning at its higher function!', 10, 40, { maxWidth: 280 })
     doc.addPage()
     doc.setFontSize(24)
 
