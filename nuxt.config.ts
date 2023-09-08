@@ -5,7 +5,10 @@ export default defineNuxtConfig({
   app: {
     head: {
       charset: 'utf-8',
-      viewport: 'width=device-width, initial-scale=1.0'
+      viewport: 'width=device-width, initial-scale=1.0',
+      script: [
+        { type: 'text/javascript', id: 'hs-script-loader', async: true, defer: true, src: '//js-eu1.hs-scripts.com/143268808.js' }
+      ]
     }
   },
   nitro: {
