@@ -57,9 +57,9 @@ const setSidePanelWidth = () => {
 
 const logout = async () => {
   const auth = getAuth()
-  const { replace } = useRouter()
+  const { push } = useRouter()
   await signOut(auth)
-  await replace('/login')
+  await push({ path: '/login' })
 }
 onMounted(() => {
   setSidePanelWidth()

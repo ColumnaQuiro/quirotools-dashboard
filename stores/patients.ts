@@ -18,10 +18,11 @@ export const usePatientsStore = defineStore('patients', () => {
   const db = useFirestore()
   const patients:Ref<Patient[]> = ref([])
   const currentPatient:Ref<Patient | null> = ref(null)
-
+  const isLoading = ref(false)
   const getPatientById = computed(() => (id: string) => patients.value.find(patient => patient.id === id))
 
   async function fetchPatients () {
+    isLoading.value = true
     patients.value = []
     const chiropractorStore = useChiropractorStore()
     const { chiropractor } = storeToRefs(chiropractorStore)
@@ -43,6 +44,7 @@ export const usePatientsStore = defineStore('patients', () => {
         })]
       })) {
       patients.value = [...patients.value, ...snap]
+      isLoading.value = false
     }
   }
 
@@ -80,6 +82,7 @@ export const usePatientsStore = defineStore('patients', () => {
     createPatient,
     getPatientById,
     setCurrentPatient,
-    updatePatient
+    updatePatient,
+    isLoading
   }
 })
