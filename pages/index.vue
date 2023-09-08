@@ -9,7 +9,7 @@
           Create new patient
         </ct-components-button>
       </div>
-      <home-patient-list />
+      <home-patient-list @create-new-patient="onCreatePatientButtonClicked"/>
     </div>
     <client-only>
       <v-dialog
