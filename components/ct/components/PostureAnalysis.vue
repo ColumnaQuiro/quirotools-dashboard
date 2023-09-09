@@ -1,7 +1,6 @@
 <template>
   <div class="canvas-container">
     <div class="canvas-wrapper">
-      <!--      <img v-if="imageUrl" id="imageId" ref="imageRef" :src="imageUrl" class="canvas-image">-->
       <canvas
         ref="canvasRef"
         class="canvas"
@@ -48,7 +47,7 @@
         size="small"
         variant="flat"
         color="tertiary"
-        class="mr-3"
+        class="mr-3 !rounded-3xl"
         @click="clearState"
       >
         <v-icon>mdi-eraser</v-icon>
@@ -75,17 +74,14 @@ import { PostureKey, usePostureAnalysisStore } from '~/stores/postureAnalysis'
 
 const firebaseStorage = useFireBaseStorage()
 const patientsStore = usePatientsStore()
-const canvasRef: Ref<HTMLCanvasElement | null> = ref(null)
-const ctxRef = ref(null)
-const imageRef = ref(null)
-const imageUrl = ref(null)
-const imageDataString = ref(null)
+const canvasRef: Ref<HTMLCanvasElement | undefined> = ref()
+const ctxRef: Ref<CanvasRenderingContext2D | undefined> = ref()
+const imageUrl: Ref<string | null | undefined> = ref('')
 const verticalLineFinished = ref(false)
 const uploadingImage = ref(false)
 const verticalDots: Position[] = reactive([])
 const horizontalDots: Position[] = reactive([])
-const horizontalPairs: Position[] = reactive([])
-const enableHorizontalLines = ref(false)
+const horizontalPairs: Position[][] = reactive([])
 const { currentPatient } = storeToRefs(patientsStore)
 
 const props = defineProps({
@@ -96,15 +92,20 @@ const props = defineProps({
 })
 
 const drawDot = (x: number, y: number) => {
-  const ctx = canvasRef.value.getContext('2d')
-  ctx.fillStyle = 'red'
-  ctx.beginPath()
-  ctx.arc(x, y, 3, 0, Math.PI * 2)
-  ctx.fill()
+  const ctx = canvasRef.value?.getContext('2d')
+  if (ctx) {
+    ctx.fillStyle = 'red'
+    ctx.beginPath()
+    ctx.arc(x, y, 3, 0, Math.PI * 2)
+    ctx.fill()
+  }
 }
 
-const handleCanvasClick = (event) => {
+const handleCanvasClick = (event: MouseEvent) => {
   const canvas = canvasRef.value
+  if (!canvas) {
+    return
+  }
   const rect = canvas.getBoundingClientRect()
   const x = event.clientX - rect.left
   const y = event.clientY - rect.top
@@ -124,7 +125,11 @@ const handleCanvasClick = (event) => {
 }
 
 const drawLine = () => {
-  const ctx = canvasRef.value.getContext('2d')
+  const ctx = canvasRef.value?.getContext('2d')
+  if (!ctx) {
+    return
+  }
+
   ctx.strokeStyle = '#f2b880'
   ctx.lineWidth = 2
   ctx.beginPath()
@@ -150,7 +155,7 @@ const handleFileUpload = (files: File[]) => {
   reader.onload = async (e) => {
     const currentUser = await getCurrentUser()
     const imageExt = file.type.split('/')[1]
-    const imagePath = `back-position/${currentUser?.uid}/${currentPatient.value.uid}/${props.id}.${imageExt}`
+    const imagePath = `back-position/${currentUser?.uid}/${currentPatient?.value?.uid}/${props.id}.${imageExt}`
     const fileData = firebaseStorage.prepareUploadFile(imagePath)
     await fileData.upload(file)
     uploadingImage.value = false
@@ -160,13 +165,15 @@ const handleFileUpload = (files: File[]) => {
     image.onload = () => {
       clearState()
       const canvas = canvasRef.value
-      const ctx = canvas.getContext('2d')
-      ctx.drawImage(image, 0, 0, canvas?.width, canvas?.height)
-      ctx.lineWidth = 2
-      ctxRef.value = ctx
-      saveStateToLocalStorage()
+      const ctx = canvas?.getContext('2d')
+      if (ctx && canvas) {
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
+        ctx.lineWidth = 2
+        ctxRef.value = ctx
+        saveStateToLocalStorage()
+      }
     }
-    image.src = e.target.result
+    image.src = e.target?.result as string || ''
   }
   reader.readAsDataURL(file)
 }
@@ -175,26 +182,15 @@ const calculateVerticalLineDegree = (dot1: Position, dot2: Position) => {
   const deltaY = dot2.y - dot1.y
   const deltaX = dot2.x - dot1.x
   const radians = Math.atan2(deltaY, deltaX)
-  const degrees = radians * (180 / Math.PI)
-  return degrees.toFixed(2)
-}
-
-const calculateHorizontalLineDegree = (dot1: Position, dot2: Position) => {
-  const deltaY = dot2.y - dot1.y
-  const deltaX = dot2.x - dot1.x
-  const radians = Math.atan2(deltaY, deltaX)
-  const degrees = radians * (180 / Math.PI)
-
-  // Calculate the angle between the horizontal line and the vertical line
-  const verticalAngle = Math.atan2(1, 0)
-  const horizontalAngle = Math.atan2(deltaY, deltaX)
-  const variation = (verticalAngle - horizontalAngle) * (180 / Math.PI) - degrees
-
-  return variation.toFixed(2)
+  return radians * (180 / Math.PI)
 }
 
 const drawDegreeText = (dot: Position, variation: number, isHorizontal: boolean) => {
-  const ctx = canvasRef.value.getContext('2d')
+  const ctx = canvasRef.value?.getContext('2d')
+  if (!ctx) {
+    return
+  }
+
   ctx.font = '12px Arial'
   ctx.fillStyle = 'black'
 
@@ -243,7 +239,10 @@ const drawDegreeText = (dot: Position, variation: number, isHorizontal: boolean)
 }
 
 const drawHorizontalLines = () => {
-  const ctx = canvasRef.value.getContext('2d')
+  const ctx = canvasRef.value?.getContext('2d')
+  if (!ctx) {
+    return
+  }
   ctx.strokeStyle = '#8d5b4c'
   ctx.lineWidth = 2
   ctx.beginPath()
@@ -255,7 +254,7 @@ const drawHorizontalLines = () => {
     ctx.lineTo(dot2.x, dot2.y)
 
     const verticalLineDegree = calculateVerticalLineDegree(dot1, dot2)
-    const horizontalLineDegree = calculateHorizontalLineDegree(dot1, dot2)
+    // const horizontalLineDegree = calculateHorizontalLineDegree(dot1, dot2)
     drawDegreeText(dot2, verticalLineDegree, true)
   }
 
@@ -290,8 +289,7 @@ const saveStateToLocalStorage = () => {
 // Function to load the state from localStorage
 const loadStateFromLocalStorage = () => {
   const patientsStore = usePatientsStore()
-  const { currentPatient } = storeToRefs(patientsStore)
-  const savedState = currentPatient.value?.backPosition?.[props.id]
+  const savedState = patientsStore.currentPatient?.backPosition?.[props.id]
   if (savedState) {
     const backPositionState: BackPositionState = JSON.parse(savedState)
     imageUrl.value = backPositionState.imageUrl
@@ -299,14 +297,16 @@ const loadStateFromLocalStorage = () => {
     image.crossOrigin = 'anonymous'
     image.onload = () => {
       const canvas = canvasRef.value
-      const ctx = canvas.getContext('2d')
-      ctx.drawImage(image, 0, 0, canvas?.width, canvas?.height)
-      ctx.lineWidth = 2
-      ctxRef.value = ctx
-      verticalDots.forEach(dot => drawDot(dot.x, dot.y))
-      horizontalDots.forEach(dot => drawDot(dot.x, dot.y))
-      drawLine()
-      drawHorizontalLines()
+      const ctx = canvas?.getContext('2d')
+      if (ctx) {
+        ctx.drawImage(image, 0, 0, canvas!.width, canvas!.height)
+        ctx.lineWidth = 2
+        ctxRef.value = ctx
+        verticalDots.forEach(dot => drawDot(dot.x, dot.y))
+        horizontalDots.forEach(dot => drawDot(dot.x, dot.y))
+        drawLine()
+        drawHorizontalLines()
+      }
     }
     image.src = backPositionState.imageUrl
     verticalDots.splice(0, verticalDots.length, ...backPositionState.verticalDots)

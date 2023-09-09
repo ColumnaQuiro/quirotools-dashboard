@@ -1,4 +1,4 @@
-import { defineStore, storeToRefs } from 'pinia'
+import { defineStore, StateTree } from 'pinia'
 import {
   addDoc,
   collection,
@@ -8,81 +8,83 @@ import {
   setDoc,
   where
 } from 'firebase/firestore'
-import { Ref } from 'vue'
 import { useFirestore } from 'vuefire'
-import { Patient } from '~/models/Patient'
+import type { Patient } from '~/types/patient'
 import { useChiropractorStore } from '~/stores/chiropractor'
 import { useUtils } from '~/composables/utils'
 
-export const usePatientsStore = defineStore('patients', () => {
-  const db = useFirestore()
-  const patients:Ref<Patient[]> = ref([])
-  const currentPatient:Ref<Patient | null> = ref(null)
-  const isLoading = ref(false)
-  const getPatientById = computed(() => (id: string) => patients.value.find(patient => patient.id === id))
+interface State {
+  patients: Patient[]
+  currentPatient?: Patient
+  isLoading: boolean
+}
 
-  async function fetchPatients () {
-    isLoading.value = true
-    patients.value = []
-    const chiropractorStore = useChiropractorStore()
-    const { chiropractor } = storeToRefs(chiropractorStore)
-    const chiroPatients = chiropractor.value?.patients
-    if (!chiroPatients) {
-      return
-    }
-    const utils = useUtils()
-    const chiroPatientsChunks = utils.chunkArray(chiroPatients, 10)
-    for await (const snap of chiroPatientsChunks.map(
-      async (chiroPatientsChunk) => {
-        const patientsQuery = await query(collection(db, 'patients'), where('uid', 'in', chiroPatientsChunk))
-        const patientsDocs = await getDocs(patientsQuery)
-        return [...patientsDocs.docs.map((doc) => {
-          return <Patient>{
-            uid: doc.id,
-            ...doc.data()
-          } as Patient
-        })]
-      })) {
-      patients.value = [...patients.value, ...snap]
-      isLoading.value = false
-    }
-  }
+interface Getters extends StateTree {
+}
 
-  async function createPatient (patient: Patient) {
-    const patientCollection = collection(db, 'patients')
-    const { chiropractor, updateChiropractor } = useChiropractorStore()
-    const currentPatients = chiropractor?.patients || []
-    try {
-      const { id } = await addDoc(patientCollection, patient)
-      await setDoc(doc(db, 'patients', id), { uid: id }, { merge: true })
-      const patients = {
-        patients: [...currentPatients, id]
+interface Actions {
+
+}
+
+export const usePatientsStore = defineStore<'patients', State, Getters, Actions>('patients', {
+  state: () => ({
+    patients: [],
+    currentPatient: undefined,
+    isLoading: false
+  }),
+  actions: {
+    async fetchPatients () {
+      const db = useFirestore()
+      this.isLoading = true
+      this.patients = []
+      const chiropractorStore = useChiropractorStore()
+      const chiroPatients = chiropractorStore.chiropractor?.patients
+      if (!chiroPatients) {
+        return
       }
-      await updateChiropractor(patients)
-      await fetchPatients()
-    } catch (e) {
-      console.error(e)
+      const utils = useUtils()
+      const chiroPatientsChunks = utils.chunkArray(chiroPatients, 10)
+      for await (const snap of chiroPatientsChunks.map(
+        async (chiroPatientsChunk) => {
+          const patientsQuery = query(collection(db, 'patients'), where('uid', 'in', chiroPatientsChunk))
+          const patientsDocs = await getDocs(patientsQuery)
+          return [...patientsDocs.docs.map((doc) => {
+            return <Patient>{
+              uid: doc.id,
+              ...doc.data()
+            } as Patient
+          })]
+        })) {
+        this.patients = [...this.patients, ...snap]
+        this.isLoading = false
+      }
+    },
+
+    async createPatient (patient: Patient) {
+      const db = useFirestore()
+      const patientCollection = collection(db, 'patients')
+      const { chiropractor, updateChiropractor } = useChiropractorStore()
+      const currentPatients = chiropractor?.patients || []
+      try {
+        const { id } = await addDoc(patientCollection, patient)
+        await setDoc(doc(db, 'patients', id), { uid: id }, { merge: true })
+        const patients = {
+          patients: [...currentPatients, id]
+        }
+        await updateChiropractor(patients)
+        await this.fetchPatients()
+      } catch (e) {
+        console.error(e)
+      }
+    },
+    async updatePatient (patient: Partial<Patient>, id: string | null = null) {
+      const db = useFirestore()
+      const patientId = id || this.currentPatient?.uid
+      const patientDocRef = patientId && doc(db, 'patients', patientId)
+      patientDocRef && await setDoc(patientDocRef, patient, { merge: true })
+    },
+    setCurrentPatient (id: string) {
+      this.currentPatient = this.patients.find(patient => patient.uid === id)
     }
-  }
-
-  async function updatePatient (patient: Partial<Patient>, id: string | null = null) {
-    const patientId = id || currentPatient.value?.uid
-    const patientDocRef = patientId && doc(db, 'patients', patientId)
-    patientDocRef && await setDoc(patientDocRef, patient, { merge: true })
-  }
-
-  function setCurrentPatient (id: string) {
-    currentPatient.value = patients.value.find(patient => patient.uid === id) ?? null
-  }
-
-  return {
-    patients,
-    currentPatient,
-    fetchPatients,
-    createPatient,
-    getPatientById,
-    setCurrentPatient,
-    updatePatient,
-    isLoading
   }
 })

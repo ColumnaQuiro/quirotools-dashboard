@@ -30,7 +30,7 @@
         size="small"
         variant="flat"
         color="tertiary"
-        class="mr-3"
+        class="mr-3 !rounded-3xl"
       >
         <v-icon>mdi-eraser</v-icon>
       </ct-components-button>

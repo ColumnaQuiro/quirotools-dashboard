@@ -16,7 +16,6 @@
 </template>
 <script setup lang="ts">
 import { Ref } from 'vue'
-import { storeToRefs } from 'pinia'
 import { User } from '@firebase/auth'
 import { usePatientsStore } from '~/stores/patients'
 import { useChiropractorStore } from '~/stores/chiropractor'
@@ -44,9 +43,8 @@ await patientsStore.fetchPatients()
 
 onMounted(async () => {
   const user: User = await getCurrentUser()
-  const { chiropractor } = storeToRefs(chiropractorStore)
 
-  if (!isUserInFreeTrial(user) && chiropractor.value && !chiropractor.value?.hasPaid) {
+  if (!isUserInFreeTrial(user) && chiropractorStore?.chiropractor && !chiropractorStore.chiropractor?.hasPaid) {
     return push('/create-subscription')
   }
 })

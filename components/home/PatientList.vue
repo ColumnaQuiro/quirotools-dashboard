@@ -21,8 +21,27 @@
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
+import { Ref } from 'vue'
 import { usePatientsStore } from '~/stores/patients'
 import { Patient } from '~/types/patient'
+
+interface SelectableItem {
+  value: any;
+  selectable: boolean;
+}
+
+interface GroupableItem<T = any> {
+  type: 'item';
+  raw: T;
+}
+
+interface DataTableItem<T = any> extends GroupableItem<T>, SelectableItem {
+  key: any;
+  index: number;
+  columns: {
+    [key: string]: any;
+  };
+}
 
 const emit = defineEmits(['createNewPatient'])
 const itemsPerPage: Ref<number> = ref(5)
@@ -32,8 +51,7 @@ const headers = [
 ]
 const patientsStore = usePatientsStore()
 const { patients, isLoading } = storeToRefs(patientsStore)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const goToPatient = (event, { item: patient }: {item:Ref<Patient>}) => {
+const goToPatient = (_event: Event, { item: patient }: {item: DataTableItem<Patient>}) => {
   const { push } = useRouter()
   push(`/patients/${patient.raw.uid}`)
 }

@@ -1,6 +1,5 @@
 import { jsPDF } from 'jspdf'
 import html2canvas from 'html2canvas'
-import { storeToRefs } from 'pinia'
 import { usePatientsStore } from '~/stores/patients'
 import type { Patient, BlindSpot, BlindSpotState } from '~/types/patient'
 type Point = { x: number; y: number };
@@ -218,8 +217,7 @@ class BlindSpotMappingTest {
 
   loadState (): void {
     const patientsStore = usePatientsStore()
-    const { currentPatient } = storeToRefs(patientsStore)
-    const blindSpotStateString = currentPatient.value?.blindSpot?.[this.id as keyof BlindSpot]
+    const blindSpotStateString = patientsStore.currentPatient?.blindSpot?.[this.id as keyof BlindSpot]
     if (blindSpotStateString) {
       const blindSpotState: BlindSpotState = JSON.parse(blindSpotStateString)
       this.blindSpotLeft = blindSpotState.blindSpotLeft
@@ -457,7 +455,7 @@ export default class DualBlindSpotMappingTest {
     doc.addPage()
     doc.setFontSize(24)
 
-    for (const [pageIndex, page] of pages.entries()) {
+    for (const [_pageIndex, page] of pages.entries()) {
       await exportCanvas(page.canvas, 10, 40)
 
       doc.setDrawColor(105, 162, 151) // Set border color to red

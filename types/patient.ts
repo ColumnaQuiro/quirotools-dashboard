@@ -14,7 +14,7 @@ export type BackPositionState = {
   imageUrl: string
   verticalDots: Position[]
   horizontalDots: Position[]
-  horizontalPairs: Position[]
+  horizontalPairs: Position[][]
 }
 
 export type BlindSpot = {

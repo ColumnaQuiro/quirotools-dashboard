@@ -1,5 +1,4 @@
-import { defineStore } from 'pinia'
-import { Ref } from 'vue'
+import { defineStore, StateTree } from 'pinia'
 
 export type PostureKey = 'left' | 'right'
 
@@ -11,13 +10,19 @@ export interface Posture {
 export type Postures = {
   [key in PostureKey]?: Posture
 }
-export const usePostureAnalysisStore = defineStore('posture-analysis', () => {
-  const postures: Ref<Postures> = ref({
-    left: undefined,
-    right: undefined
-  })
 
-  return {
-    postures
-  }
+interface State {
+  postures: Postures
+}
+
+interface Getters extends StateTree {}
+interface Actions {}
+
+export const usePostureAnalysisStore = defineStore<'posture-analysis', State, Getters, Actions>('posture-analysis', {
+  state: () => ({
+    postures: {
+      left: undefined,
+      right: undefined
+    }
+  })
 })
