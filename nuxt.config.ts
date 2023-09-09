@@ -1,5 +1,4 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-import vuetify from 'vite-plugin-vuetify'
 
 export default defineNuxtConfig({
   app: {
@@ -14,24 +13,11 @@ export default defineNuxtConfig({
   nitro: {
     preset: 'netlify'
   },
-  ssr: {
-    noExternal: ['vuetify']
-  },
   css: [
-    'vuetify/styles',
-    '~/assets/scss/main.css',
-    '~/assets/scss/main.scss',
-    '@mdi/font/css/materialdesignicons.css'
+    '~/assets/scss/main.scss'
   ],
   modules: [
-    (_options, nuxt) => {
-      nuxt.hooks.hook('vite:extendConfig', config =>
-        config.plugins?.push(vuetify({
-          autoImport: true,
-          styles: { configFile: 'assets/scss/vuetify.scss' }
-        })) as any
-      )
-    },
+    'vuetify-nuxt-module',
     'nuxt-vuefire',
     '@pinia/nuxt'
   ],
@@ -51,6 +37,11 @@ export default defineNuxtConfig({
       appId: process.env.FIREBASE_APP_ID
     }
   },
+  vuetify: {
+    moduleOptions: {
+      importComposables: false
+    }
+  },
   postcss: {
     plugins: {
       tailwindcss: {},
@@ -63,8 +54,8 @@ export default defineNuxtConfig({
       baseURL: process.env.NODE_ENV === 'development' ? 'http://localhost:3000/' : 'https://chiro-tools.com/'
     }
   },
-  build: {
-    transpile: ['vuetify']
+  experimental: {
+    inlineSSRStyles: false
   },
   sourcemap: {
     server: false,

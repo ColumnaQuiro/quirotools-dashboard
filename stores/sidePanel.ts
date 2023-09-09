@@ -1,10 +1,14 @@
-import { defineStore } from 'pinia'
-import { Ref } from 'vue'
+import { defineStore, StateTree } from 'pinia'
 
-export const useSidePanelStore = defineStore('sidePanel', () => {
-  const sidePanelWidth:Ref<number> = ref(0)
+interface State {
+  sidePanelWidth: numbner
+}
 
-  return {
-    sidePanelWidth
-  }
+interface Getters extends StateTree {}
+interface Actions {}
+
+export const useSidePanelStore = defineStore<'sidePanel', State, Getters, Actions>('sidePanel', {
+  state: () => ({
+    sidePanelWidth: 0
+  })
 })

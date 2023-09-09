@@ -6,31 +6,31 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "type-check": "nuxi typecheck"
   },
   "devDependencies": {
-    "@firebase/app-types": "^0.9.0",
-    "@mdi/font": "^7.2.96",
-    "@netlify/functions": "^1.6.0",
-    "@nuxtjs/eslint-config-typescript": "^12.1.0",
-    "@pinia/nuxt": "^0.4.11",
-    "autoprefixer": "^10.4.15",
-    "eslint-plugin-unused-imports": "^3.0.0",
-    "nuxt": "^3.5.3",
-    "pinia": "^2.1.3",
-    "postcss": "^8.4.29",
-    "sass": "^1.66.1",
-    "tailwindcss": "^3.3.3",
-    "vite-plugin-vuetify": "^1.0.2",
-    "vuetify": "^3.3.15"
+    "@firebase/app-types": "0.9.0",
+    "@mdi/font": "7.2.96",
+    "@netlify/functions": "1.6.0",
+    "@nuxtjs/eslint-config-typescript": "12.1.0",
+    "@pinia/nuxt": "0.4.11",
+    "autoprefixer": "10.4.15",
+    "eslint-plugin-unused-imports": "3.0.0",
+    "nuxt": "3.5.3",
+    "pinia": "2.1.3",
+    "postcss": "8.4.29",
+    "sass": "1.66.1",
+    "tailwindcss": "3.3.3",
+    "vuetify-nuxt-module": "^0.5.7"
   },
   "dependencies": {
-    "@stripe/stripe-js": "^1.54.0",
-    "firebase": "^9.20.0",
-    "firebase-admin": "^11.7.0",
-    "html2canvas": "^1.4.1",
-    "jspdf": "^2.5.1",
-    "nuxt-vuefire": "^0.1.6",
-    "vuefire": "^3.1.0"
+    "@stripe/stripe-js": "1.54.0",
+    "firebase": "9.22.2",
+    "firebase-admin": "11.9.0",
+    "html2canvas": "1.4.1",
+    "jspdf": "2.5.1",
+    "nuxt-vuefire": "0.1.6",
+    "vuefire": "3.1.0"
   }
 }

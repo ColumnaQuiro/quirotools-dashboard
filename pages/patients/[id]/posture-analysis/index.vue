@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="text-3xl pb-6">
-      {{ currentPatient?.name }}
-      {{ currentPatient?.lastName }}
+      {{ patientsStore.currentPatient?.name }}
+      {{ patientsStore.currentPatient?.lastName }}
     </div>
     <ct-components-button variant="flat" color="tertiary" @click="exportPosturesToPDF">
       Export to PDF
@@ -15,7 +15,6 @@
 </template>
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
-import { storeToRefs } from 'pinia'
 import { jsPDF } from 'jspdf'
 import html2canvas from 'html2canvas'
 import { usePatientsStore } from '~/stores/patients'
@@ -24,7 +23,6 @@ import { usePostureAnalysisStore } from '~/stores/postureAnalysis'
 const { params } = useRoute()
 const patientId = params.id as string
 const patientsStore = usePatientsStore()
-const { currentPatient } = storeToRefs(patientsStore)
 
 const getImgFromUrl = (logoUrl: string, callback: Function) => {
   const img = new Image()
@@ -66,7 +64,7 @@ const exportPosturesToPDF = () => {
       await exportCanvas(postureAnalysisStore.postures?.left?.canvas, img1, 10, 90)
       await exportCanvas(postureAnalysisStore.postures?.right?.canvas, img2, 110, 90)
 
-      doc.save(`postura_${currentPatient.value.name}_${currentPatient.value.lastName}.pdf`)
+      doc.save(`postura_${patientsStore?.currentPatient?.name}_${patientsStore?.currentPatient?.lastName}.pdf`)
     })
   })
 }

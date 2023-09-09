@@ -1,34 +1,49 @@
-import { defineStore } from 'pinia'
-import { Ref } from 'vue'
+import { defineStore, StateTree } from 'pinia'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
-import { useFirestore } from 'vuefire'
 import { User } from '@firebase/auth'
+import { useFirestore } from 'vuefire'
 import { Chiropractor } from '~/types/chiropractor'
 import { ERRORS } from '~/constants/errors'
 
-export const useChiropractorStore = defineStore('chiropractor', () => {
-  const db = useFirestore()
-  const chiropractor: Ref<Chiropractor | null> = ref(null)
+interface State {
+  chiropractor?: Chiropractor
+}
 
-  async function fetchChiropractor () {
-    const user: User = await getCurrentUser()
-    const userId = user?.uid
-    if (!userId) {
-      return
+interface Getters extends StateTree {
+
+}
+
+interface Actions {
+  fetchChiropractor(): Promise<void>
+  updateChiropractor(chiropractor: Partial<Chiropractor>): Promise<void>
+}
+
+export const useChiropractorStore = defineStore<'chiropractor', State, Getters, Actions>('chiropractor', {
+  state: () => ({
+    chiropractor: undefined
+  }),
+  actions: {
+    async fetchChiropractor () {
+      const db = useFirestore()
+      const user: User = await getCurrentUser()
+      const userId = user?.uid
+      if (!userId) {
+        return
+      }
+      const chiroDocRef = doc(db, 'chiropractors', userId)
+      const currentChiro = await getDoc(chiroDocRef)
+      this.chiropractor = currentChiro.data() as Chiropractor
+    },
+    async updateChiropractor (chiropractor) {
+      const db = useFirestore()
+      const userId = useCurrentUser()?.value?.uid
+      if (!userId) {
+        throw new Error(ERRORS.USER_NOT_LOGGED_IN)
+      }
+      const chiroDocRef = doc(db, 'chiropractors', userId)
+      await setDoc(chiroDocRef, chiropractor, { merge: true })
+      await this.fetchChiropractor()
     }
-    const chiroDocRef = doc(db, 'chiropractors', userId)
-    const currentChiro = await getDoc(chiroDocRef)
-    chiropractor.value = currentChiro.data() as Chiropractor
-  }
-  async function updateChiropractor (chiropractor: Partial<Chiropractor>) {
-    const userId = useCurrentUser()?.value?.uid
-    if (!userId) {
-      throw new Error(ERRORS.USER_NOT_LOGGED_IN)
-    }
-    const chiroDocRef = doc(db, 'chiropractors', userId)
-    await setDoc(chiroDocRef, chiropractor, { merge: true })
-    await fetchChiropractor()
   }
 
-  return { chiropractor, updateChiropractor, fetchChiropractor }
 })
