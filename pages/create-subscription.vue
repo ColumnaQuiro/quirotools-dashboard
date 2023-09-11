@@ -8,7 +8,7 @@
       <div class="text-base pb-4">
         We hope you enjoyed your free trial with us. We wanted to inform you that your trial period has come to an end,
         and in order to continue accessing our valuable services, we kindly ask you to subscribe.<br><br>
-        To ensure uninterrupted usage, we offer a subscription plan at an affordable price of <span class="font-medium">only 9,95€</span> per month. By
+        To ensure uninterrupted usage, we offer a subscription plan at an affordable price of <span class="font-medium">only 11,95€</span> per month. By
         subscribing, you will regain full access to all the features and benefits our platform provides.
       </div>
       <ct-components-button color="secondary" @click="createSubscription">
@@ -31,9 +31,9 @@ const stripe = useStripe()
 
 const createSubscription = () => {
   const config = useRuntimeConfig()
-  const { baseURL } = config.public
+  const { baseURL, stripeSubscriptionProductId } = config.public
   const lineItems: StripeCheckoutItem[] = [
-    { price: 'price_1NH9aXKNYpQIrO5VQB6v30mV', quantity: 1 }
+    { price: stripeSubscriptionProductId, quantity: 1 }
   ]
   stripe.openStripeCheckout(lineItems, `${baseURL}subscription-created`, `${baseURL}create-subscription`, 'subscription')
 }
