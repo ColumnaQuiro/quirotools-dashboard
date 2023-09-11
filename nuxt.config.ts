@@ -51,6 +51,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+      stripeSubscriptionProductId: process.env.NODE_ENV === 'development' ? 'price_1NH9aXKNYpQIrO5VQB6v30mV' : 'price_1Np6tNKNYpQIrO5VTdw4Vcbs',
       baseURL: process.env.NODE_ENV === 'development' ? 'http://localhost:3000/' : 'https://chiro-tools.com/'
     }
   },
