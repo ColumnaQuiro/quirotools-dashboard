@@ -18,21 +18,20 @@
       </div>
     </div>
     <div>
-      <ct-components-button ref="blindSpotTopLeftButton" color="secondary">
+      <ct-components-button ref="blindSpotTopLeftButton">
         Generate Left Polygon
       </ct-components-button>
-      <ct-components-button ref="blindSpotTopRightButton" class="mx-3" color="secondary">
+      <ct-components-button ref="blindSpotTopRightButton" class="mx-3">
         Generate Right Polygon
       </ct-components-button>
       <ct-components-button
         ref="blindSpotTopResetButton"
-        icon
-        size="small"
-        variant="flat"
-        color="tertiary"
-        class="mr-3 !rounded-3xl"
+        size="xs"
+        class="!rounded-3xl py-2"
       >
-        <v-icon>mdi-eraser</v-icon>
+        <svg class="w-[20px] h-[20px] text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h16M7 8v8m4-8v8M7 1h4a1 1 0 0 1 1 1v3H6V2a1 1 0 0 1 1-1ZM3 5h12v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5Z" />
+        </svg>
       </ct-components-button>
     </div>
 
@@ -51,14 +50,20 @@
       </div>
     </div>
     <div>
-      <ct-components-button ref="blindSpotBottomLeftButton" color="secondary">
+      <ct-components-button ref="blindSpotBottomLeftButton">
         Generate Left Polygon
       </ct-components-button>
-      <ct-components-button ref="blindSpotBottomRightButton" class="mx-3" color="secondary">
+      <ct-components-button ref="blindSpotBottomRightButton" class="mx-3">
         Generate Right Polygon
       </ct-components-button>
-      <ct-components-button ref="blindSpotBottomResetButton" color="quaternary">
-        Reset
+      <ct-components-button
+        ref="blindSpotBottomResetButton"
+        size="xs"
+        class="!rounded-3xl py-2"
+      >
+        <svg class="w-[20px] h-[20px] text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h16M7 8v8m4-8v8M7 1h4a1 1 0 0 1 1 1v3H6V2a1 1 0 0 1 1-1ZM3 5h12v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5Z" />
+        </svg>
       </ct-components-button>
     </div>
     <div class="relative mt-10">

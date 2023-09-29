@@ -25,10 +25,10 @@ export type BackPosition = {
   [key: string]: string
 }
 
-export type Patient = {
-  uid: string
+export interface Patient {
+  uid?: string
   name: string
   lastName: string
-  blindSpot: BlindSpot
-  backPosition: BackPosition
+  blindSpot?: BlindSpot
+  backPosition?: BackPosition
 }

@@ -3,7 +3,7 @@
     <div class="flex flex-row">
       <ct-layouts-side-panel @side-panel-expanded="toggleSidePanelExpansion" />
       <div
-        class="layout__content pt-10 w-full pr-4"
+        class="layout__content pt-10 pr-4 w-full"
         :class="{
           'pl-[256px]': sidePanelExpanded,
           'pl-[72px]': !sidePanelExpanded
@@ -51,6 +51,7 @@ onMounted(async () => {
 </script>
 <style lang="scss">
 .layout__content {
+  height: calc(100dvh - 80px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 </style>

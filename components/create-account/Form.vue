@@ -25,7 +25,6 @@
     <ct-components-button
       ref="blindSpotTopLeftButton"
       type="submit"
-      color="secondary"
       class="mx-auto"
       :disabled="creatingAccount"
     >
@@ -58,8 +57,16 @@ const login = async () => {
     const user = await createUserWithEmailAndPassword(auth, email.value, password.value)
     await sendEmailVerification(user.user)
     await createChiropractor()
+    const { gtag } = useGtag()
+    gtag('set', 'user_id', user.user.uid)
+    useTrackEvent('create-account', {
+      method: 'Email'
+    })
     emit('onAccountCreated')
   } catch (error: any) {
+    useTrackEvent('create-account-error', {
+      error: error.message
+    })
     errorMessage.value = error.message
   } finally {
     creatingAccount.value = false
