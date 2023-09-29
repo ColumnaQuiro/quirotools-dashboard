@@ -19,14 +19,12 @@
       <ct-components-button
         :disabled="verticalDots.length < 2"
         class="mr-3"
-        color="secondary"
         @click="drawLine"
       >
         Draw Y-axis
       </ct-components-button>
       <ct-components-button
         class="mr-3"
-        color="secondary"
         :disabled="horizontalDots.length < 2"
         @click="drawHorizontalLines"
       >

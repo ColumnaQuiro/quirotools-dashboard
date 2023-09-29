@@ -9,7 +9,7 @@
       :placeholder="placeholder"
       :autocomplete="autocomplete"
       :required="required"
-      class="focus:ring-brand-light-secondary"
+      class="focus:ring-brand-light-primary"
     />
   </div>
 </template>

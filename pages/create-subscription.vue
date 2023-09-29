@@ -11,7 +11,7 @@
         To ensure uninterrupted usage, we offer a subscription plan at an affordable price of <span class="font-medium">only 4,95€</span> per month. By
         subscribing, you will regain full access to all the features and benefits our platform provides.
       </div>
-      <ct-components-button color="secondary" @click="createSubscription">
+      <ct-components-button @click="createSubscription">
         Subscribe
       </ct-components-button>
     </div>

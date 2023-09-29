@@ -1,6 +1,14 @@
 <template>
   <Button
-    :class="`bg-brand-${color} hover:bg-brand-${color} rounded-lg text-white font-medium`"
+    :class="[
+      `bg-brand-${color} hover:bg-brand-${color} rounded-lg text-white font-medium`,
+      {
+        'bg-brand-primary hover:bg-brand-primary': color === 'primary',
+        'bg-brand-tertiary hover:bg-brand-tertiary': color === 'tertiary',
+        'bg-brand-red hover:bg-brand-red': color === 'red',
+        'bg-gray hover:bg-gray': color === 'gray'
+      }
+    ]"
     :disabled="disabled"
     :tag="tag"
     :size="size"
@@ -39,12 +47,12 @@ interface Props {
   /**
    * Applies specified color to the control - it can be the name of material color (for example success or purple) or css color (#033 or rgba(255, 0, 0, 0.5))
    */
-  color?: 'primary' | 'secondary' | 'tertiary' | 'red'
+  color?: 'primary' | 'tertiary' | 'red' | 'gray'
 }
 
 withDefaults(defineProps<Props>(), {
   disabled: false,
-  color: 'secondary',
+  color: 'primary',
   size: 'md',
   href: undefined,
   to: undefined,

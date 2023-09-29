@@ -12,24 +12,22 @@ module.exports = {
   ],
   theme: {
     extend: {
-    },
-    colors: {
-      white: '#FFFFFF',
-      black: '#000000',
-      brand: {
-        primary: '#8D5B4C',
-        secondary: '#69A297',
-        tertiary: '#F2B880',
-        quaternary: '#E7CFBC',
-        white: '#FFF4EC',
-        black: '#474747',
-        red: '#DD474D'
-      },
-      'brand-light': {
-        primary: '#8D5B4C80',
-        secondary: '#69A29780',
-        tertiary: '#F2B88080',
-        quaternary: '#E7CFBC80'
+      colors: {
+        white: '#FFFFFF',
+        black: '#000000',
+        brand: {
+          primary: '#69A297',
+          tertiary: '#F2B880',
+          quaternary: '#E7CFBC',
+          white: '#FFF4EC',
+          black: '#474747',
+          red: '#DD474D'
+        },
+        'brand-light': {
+          primary: '#69A29780',
+          tertiary: '#F2B88080',
+          quaternary: '#E7CFBC80'
+        }
       }
     },
     container: {

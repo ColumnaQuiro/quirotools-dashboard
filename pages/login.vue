@@ -1,7 +1,7 @@
 <template>
   <div class="flex items-center justify-center min-h-screen">
     <form class="md:w-[600px] w-full bg-white shadow-md rounded-2xl p-6 md:mx-0 mx-4" @submit.prevent="login">
-      <div class="text-2xl text-brand-secondary text-center font-semibold pb-6">
+      <div class="text-2xl text-brand-primary text-center font-semibold pb-6">
         ChiroTools
       </div>
       <div class="mb-4">

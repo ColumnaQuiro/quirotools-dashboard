@@ -8,7 +8,7 @@
       <div class="text-base pb-4">
         We hope you continue enjoying our platform.
       </div>
-      <ct-components-button color="secondary" to="/login">
+      <ct-components-button to="/login">
         Login
       </ct-components-button>
     </div>

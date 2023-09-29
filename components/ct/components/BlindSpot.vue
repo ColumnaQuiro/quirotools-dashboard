@@ -18,10 +18,10 @@
       </div>
     </div>
     <div>
-      <ct-components-button ref="blindSpotTopLeftButton" color="secondary">
+      <ct-components-button ref="blindSpotTopLeftButton">
         Generate Left Polygon
       </ct-components-button>
-      <ct-components-button ref="blindSpotTopRightButton" class="mx-3" color="secondary">
+      <ct-components-button ref="blindSpotTopRightButton" class="mx-3">
         Generate Right Polygon
       </ct-components-button>
       <ct-components-button
@@ -50,10 +50,10 @@
       </div>
     </div>
     <div>
-      <ct-components-button ref="blindSpotBottomLeftButton" color="secondary">
+      <ct-components-button ref="blindSpotBottomLeftButton">
         Generate Left Polygon
       </ct-components-button>
-      <ct-components-button ref="blindSpotBottomRightButton" class="mx-3" color="secondary">
+      <ct-components-button ref="blindSpotBottomRightButton" class="mx-3">
         Generate Right Polygon
       </ct-components-button>
       <ct-components-button

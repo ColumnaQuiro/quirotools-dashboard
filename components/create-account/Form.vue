@@ -25,7 +25,6 @@
     <ct-components-button
       ref="blindSpotTopLeftButton"
       type="submit"
-      color="secondary"
       class="mx-auto"
       :disabled="creatingAccount"
     >
