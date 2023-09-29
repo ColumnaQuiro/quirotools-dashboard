@@ -1,26 +1,32 @@
 <template>
   <div ref="sidePanelRef" :class="{ 'w-60': isOpen, 'w-14': !isOpen }" class="side-panel fixed h-full bg-white pb-6">
-    <!--    <ct-components-button icon variant="plain" color="black" class="p-4" @click="toggleSidePanel">-->
-    <!--      <v-icon>mdi-menu</v-icon>-->
-    <!--    </ct-components-button>-->
     <div class="flex flex-col justify-between h-full">
       <div>
-        <div class="py-4 mx-2 border-b">
-          <v-img :src="`${STATICS_CDN}logo/icon-color.webp`" :width="35" alt="ColumnaQuiro" class="mx-auto" />
+        <div class="py-4">
+          <img :src="`${STATICS_CDN}chiro-tools/logo/icon-color.webp`" :width="45" alt="Chirotools" class="mx-auto">
         </div>
         <transition name="slide">
-          <ul class="space-y-1">
-            <li v-for="(item, index) in menuItems" :key="index" class="p-4">
-              <nuxt-link :to="item.link">
-                <v-icon>{{ item.icon }}</v-icon>
+          <ul class="space-y-1 border-t mx-2">
+            <li class="py-4 px-2">
+              <nuxt-link to="/">
+                <svg class="w-[20px] h-[20px] text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 18">
+                  <path d="M14 2a3.963 3.963 0 0 0-1.4.267 6.439 6.439 0 0 1-1.331 6.638A4 4 0 1 0 14 2Zm1 9h-1.264A6.957 6.957 0 0 1 15 15v2a2.97 2.97 0 0 1-.184 1H19a1 1 0 0 0 1-1v-1a5.006 5.006 0 0 0-5-5ZM6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Z"/>
+                </svg>
               </nuxt-link>
             </li>
           </ul>
         </transition>
       </div>
-      <ct-components-button icon variant="plain" color="black" class="mx-auto" @click="logout">
-        <v-icon>mdi-logout</v-icon>
-      </ct-components-button>
+      <nuxt-link
+        tag="router-link"
+        class="mx-auto"
+        to="/login"
+        @click="logout"
+      >
+        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 16">
+          <path stroke="#ababab" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h11m0 0-4-4m4 4-4 4m-5 3H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h3" />
+        </svg>
+      </nuxt-link>
     </div>
   </div>
 </template>
@@ -37,9 +43,6 @@ const emit = defineEmits<{
 }>()
 
 const sidePanelRef: Ref<HTMLElement | null> = ref(null)
-const menuItems = [
-  { icon: 'mdi-account-group', link: '/' }
-]
 
 const isOpen = ref(false)
 
@@ -57,37 +60,13 @@ const setSidePanelWidth = () => {
 
 const logout = async () => {
   const auth = getAuth()
-  const { push } = useRouter()
   await signOut(auth)
-  await push({ path: '/login' })
+  useTrackEvent('logout')
 }
 onMounted(() => {
   setSidePanelWidth()
 })
 </script>
-
-<style>
-.side-panel {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.slide-enter-active,
-.slide-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.slide-enter {
-  opacity: 0;
-}
-
-.slide-enter-to {
-  opacity: 1;
-}
-
-.slide-leave {
-  opacity: 1;
-}
-
-.slide-leave-to {
-  opacity: 0;
-}
+<style lang="scss">
+.side-panel {}
 </style>

@@ -1,7 +1,7 @@
 import { defineStore, StateTree } from 'pinia'
 
 interface State {
-  sidePanelWidth: numbner
+  sidePanelWidth: number
 }
 
 interface Getters extends StateTree {}

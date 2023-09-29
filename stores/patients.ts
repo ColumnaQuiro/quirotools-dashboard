@@ -1,7 +1,7 @@
 import { defineStore, StateTree } from 'pinia'
 import {
   addDoc,
-  collection,
+  collection, deleteDoc,
   doc,
   getDocs,
   query,
@@ -23,7 +23,11 @@ interface Getters extends StateTree {
 }
 
 interface Actions {
-
+  fetchPatients(): Promise<void>
+  createPatient(patient: Patient): Promise<void>
+  updatePatient(patient: Partial<Patient>, id?: string | null): Promise<void>
+  deletePatient(patientId: string): Promise<void>
+  setCurrentPatient(id: string): void
 }
 
 export const usePatientsStore = defineStore<'patients', State, Getters, Actions>('patients', {
@@ -59,8 +63,7 @@ export const usePatientsStore = defineStore<'patients', State, Getters, Actions>
         this.isLoading = false
       }
     },
-
-    async createPatient (patient: Patient) {
+    async createPatient (patient) {
       const db = useFirestore()
       const patientCollection = collection(db, 'patients')
       const { chiropractor, updateChiropractor } = useChiropractorStore()
@@ -77,13 +80,19 @@ export const usePatientsStore = defineStore<'patients', State, Getters, Actions>
         console.error(e)
       }
     },
-    async updatePatient (patient: Partial<Patient>, id: string | null = null) {
+    async updatePatient (patient: Partial<Patient>, id = null) {
       const db = useFirestore()
       const patientId = id || this.currentPatient?.uid
       const patientDocRef = patientId && doc(db, 'patients', patientId)
       patientDocRef && await setDoc(patientDocRef, patient, { merge: true })
     },
-    setCurrentPatient (id: string) {
+    async deletePatient (patientId) {
+      const db = useFirestore()
+      const patientDocRef = doc(db, 'patients', patientId)
+      await deleteDoc(patientDocRef)
+      this.patients = this.patients.filter(patient => patient.uid !== patientId)
+    },
+    setCurrentPatient (id) {
       this.currentPatient = this.patients.find(patient => patient.uid === id)
     }
   }

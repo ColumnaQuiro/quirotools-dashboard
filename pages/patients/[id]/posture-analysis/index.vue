@@ -33,6 +33,7 @@ const getImgFromUrl = (logoUrl: string, callback: Function) => {
 }
 
 const exportPosturesToPDF = () => {
+  useTrackEvent('export-posture-analysis-pdf')
   const postureAnalysisStore = usePostureAnalysisStore()
 
   getImgFromUrl(postureAnalysisStore.postures?.left?.imageUrl, (img1: string) => {

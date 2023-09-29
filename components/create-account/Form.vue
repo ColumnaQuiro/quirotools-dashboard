@@ -58,8 +58,16 @@ const login = async () => {
     const user = await createUserWithEmailAndPassword(auth, email.value, password.value)
     await sendEmailVerification(user.user)
     await createChiropractor()
+    const { gtag } = useGtag()
+    gtag('set', 'user_id', user.user.uid)
+    useTrackEvent('create-account', {
+      method: 'Email'
+    })
     emit('onAccountCreated')
   } catch (error: any) {
+    useTrackEvent('create-account-error', {
+      error: error.message
+    })
     errorMessage.value = error.message
   } finally {
     creatingAccount.value = false

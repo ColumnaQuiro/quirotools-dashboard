@@ -6,7 +6,9 @@ module.exports = {
     './pages/**/*.vue',
     './plugins/**/*.{js,ts}',
     './nuxt.config.{js,ts}',
-    './app.vue'
+    './app.vue',
+    'node_modules/flowbite-vue/**/*.{js,jsx,ts,tsx}',
+    './node_modules/flowbite/**/*.{js,ts}'
   ],
   theme: {
     extend: {
@@ -20,7 +22,8 @@ module.exports = {
         tertiary: '#F2B880',
         quaternary: '#E7CFBC',
         white: '#FFF4EC',
-        black: '#474747'
+        black: '#474747',
+        red: '#DD474D'
       },
       'brand-light': {
         primary: '#8D5B4C80',
@@ -43,5 +46,7 @@ module.exports = {
       sans: ['Montserrat', 'sans-serif']
     }
   },
-  plugins: []
+  plugins: [
+    require('flowbite/plugin')
+  ]
 }

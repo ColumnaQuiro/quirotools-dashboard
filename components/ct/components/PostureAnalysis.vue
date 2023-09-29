@@ -1,31 +1,21 @@
 <template>
-  <div class="canvas-container">
-    <div class="canvas-wrapper">
+  <div class="posture-analysis">
+    <div class="posture-analysis__canvas-wrapper">
       <canvas
+        v-if="imageUrl"
         ref="canvasRef"
-        class="canvas"
+        class="posture-analysis__canvas"
         width="465"
         height="700"
         @click="handleCanvasClick"
       />
+      <FileInput v-else :dropzone="true" class="posture-analysis__file-input" @update:model-value="handleFileUpload">
+        <p class="!mt-1 text-xs text-gray-500 dark:text-gray-400">
+          SVG, PNG, JPG or GIF
+        </p>
+      </FileInput>
     </div>
     <div class="flex flex-row">
-      <v-file-input
-        :clearable="false"
-        variant="solo-filled"
-        prepend-inner-icon="mdi-camera"
-        prepend-icon=""
-        :hide-details="true"
-        base-color="secondary"
-        bg-color="secondary"
-        color="secondary"
-        :flat="true"
-        density="compact"
-        :rounded="true"
-        :single-line="true"
-        class="mr-3"
-        @update:model-value="handleFileUpload"
-      />
       <ct-components-button
         :disabled="verticalDots.length < 2"
         class="mr-3"
@@ -43,21 +33,15 @@
         Draw Horizontal Lines
       </ct-components-button>
       <ct-components-button
-        icon
-        size="small"
-        variant="flat"
-        color="tertiary"
+        size="sm"
         class="mr-3 !rounded-3xl"
         @click="clearState"
       >
-        <v-icon>mdi-eraser</v-icon>
+        <svg class="w-[20px] h-[20px] text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h16M7 8v8m4-8v8M7 1h4a1 1 0 0 1 1 1v3H6V2a1 1 0 0 1 1-1ZM3 5h12v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5Z" />
+        </svg>
       </ct-components-button>
-      <v-progress-circular
-        v-if="uploadingImage"
-        indeterminate
-        color="secondary"
-        class="mt-1"
-      />
+      <spinner v-if="uploadingImage" size="12" color="green" />
     </div>
   </div>
 </template>
@@ -67,6 +51,7 @@
 import { storeToRefs } from 'pinia'
 import { getCurrentUser } from 'vuefire'
 import { Ref } from 'vue'
+import { FileInput, Spinner } from 'flowbite-vue'
 import { usePatientsStore } from '~/stores/patients'
 import { BackPositionState, Patient, Position } from '~/types/patient'
 import { useFireBaseStorage } from '~/composables/storage'
@@ -76,7 +61,7 @@ const firebaseStorage = useFireBaseStorage()
 const patientsStore = usePatientsStore()
 const canvasRef: Ref<HTMLCanvasElement | undefined> = ref()
 const ctxRef: Ref<CanvasRenderingContext2D | undefined> = ref()
-const imageUrl: Ref<string | null | undefined> = ref('')
+const imageUrl: Ref<string | null | undefined> = ref()
 const verticalLineFinished = ref(false)
 const uploadingImage = ref(false)
 const verticalDots: Position[] = reactive([])
@@ -148,9 +133,8 @@ const drawLine = () => {
   ctx.stroke()
 }
 
-const handleFileUpload = (files: File[]) => {
+const handleFileUpload = (file: File) => {
   uploadingImage.value = true
-  const file = files[0]
   const reader = new FileReader()
   reader.onload = async (e) => {
     const currentUser = await getCurrentUser()
@@ -160,6 +144,7 @@ const handleFileUpload = (files: File[]) => {
     await fileData.upload(file)
     uploadingImage.value = false
     imageUrl.value = fileData.url.value
+    console.log(imageUrl.value)
     const image = new Image()
     image.crossOrigin = 'anonymous'
     image.onload = () => {
@@ -320,6 +305,7 @@ const clearState = () => {
   horizontalDots.splice(0, horizontalDots.length)
   horizontalPairs.splice(0, horizontalPairs.length)
   canvasRef.value?.getContext('2d')?.clearRect(0, 0, canvasRef.value?.width, canvasRef.value?.height)
+  imageUrl.value = undefined
 }
 
 onMounted(() => {
@@ -347,37 +333,40 @@ watchEffect(() => {
   }
 }
 </style>
-<style lang="scss" scoped>
+<style lang="scss">
 $canvas-width: 465px;
 
-.canvas-container {
+.posture-analysis {
   position: relative;
   height: 900px;
-}
 
-.canvas-wrapper {
-  position: relative;
-  width: $canvas-width;
-}
+  &__canvas-wrapper {
+    position: relative;
+    width: $canvas-width;
+  }
 
-.canvas-image {
-  position: absolute;
-  top: 80px;
-  left: 0;
-  pointer-events: none;
-  width: $canvas-width;
-  height: 700px;
-  object-fit: cover;
-}
+  &__canvas {
+    position: absolute;
+    top: 80px;
+    left: 0;
+    border: 1px solid #ababab;
+    border-radius: 8px;
+  }
 
-.canvas {
-  position: absolute;
-  top: 80px;
-  left: 0;
-  border: 1px solid #000000;
-}
+  &__file-input {
+    position: absolute;
+    top: 80px;
+    left: 0;
+    width: 465px;
+    height: 700px;
 
-.toggle-button {
-  margin-top: 10px;
+    div:nth-child(1) {
+      @apply h-full;
+    }
+
+    label {
+      @apply h-full;
+    }
+  }
 }
 </style>

@@ -10,7 +10,7 @@
             v-model="email"
             label="Email"
             placeholder="user@gmail.com"
-            :rules="EMAIL_RULES"
+            required
             type="email"
             autocomplete="username"
           />
@@ -22,10 +22,11 @@
           label="Password"
           :rules="REQUIRED_RULE"
           type="password"
+          required
           autocomplete="current-password"
         />
       </div>
-      <ct-components-button ref="blindSpotTopLeftButton" type="submit" color="secondary" class="mx-auto">
+      <ct-components-button ref="blindSpotTopLeftButton" type="submit">
         Sign In
       </ct-components-button>
       <div class="text-center pt-4">
@@ -41,7 +42,7 @@
           by
         </div>
         <div>
-          <v-img :src="`${STATICS_CDN}logo/logo-color.webp`" :width="65" alt="ColumnaQuiro" class="mx-auto" />
+          <img :src="`${STATICS_CDN}logo/logo-color.webp`" :width="65" alt="Quiro-tools" class="mx-auto">
         </div>
       </div>
     </form>
@@ -57,7 +58,7 @@ import {
 } from '@firebase/auth'
 import { useFirebaseAuth } from 'vuefire'
 import { STATICS_CDN } from '~/constants/urls'
-import { EMAIL_RULES, REQUIRED_RULE } from '~/constants/form-rules'
+import { REQUIRED_RULE } from '~/constants/form-rules'
 
 definePageMeta({
   layout: 'login'
@@ -75,8 +76,14 @@ const login = async () => {
     if (!user.user.emailVerified) {
       throw new Error('Your email is not verify. Please check you inbox to verify your email.')
     }
+    useTrackEvent('login', {
+      method: 'Password'
+    })
     await router.push('/')
   } catch (error: any) {
+    useTrackEvent('login-error', {
+      error: error.message
+    })
     errorMessage.value = error.message
   }
 }

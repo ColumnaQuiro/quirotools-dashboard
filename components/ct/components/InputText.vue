@@ -1,41 +1,49 @@
 <template>
-  <v-text-field
-    v-model="model"
-    :type="type"
-    :rules="required ? REQUIRED_RULE : rules"
-    :placeholder="placeholder"
-    :label="label"
-    :append-inner-icon="appendInnerIcon"
-    density="compact"
-    variant="solo"
-    class="input-text"
-    @click:append-inner="emit('click:appendInner')"
-  />
+  <div>
+    <label class="block mb-2 text-sm font-medium text-brand-black">
+      {{ label }}
+    </label>
+    <Input
+      v-model="model"
+      :type="type"
+      :placeholder="placeholder"
+      :autocomplete="autocomplete"
+      :required="required"
+      class="focus:ring-brand-light-secondary"
+    />
+  </div>
 </template>
 <script setup lang="ts">
-import { FunctionalComponent } from 'vue'
-import { REQUIRED_RULE } from '~/constants/form-rules'
+import { Input } from 'flowbite-vue'
+import { PropType } from 'vue'
 
-interface Props {
-  modelValue: string
-  label?: string
-  placeholder?: string
-  rules?: [] | [((v: any) => boolean | string)]
-  required?: boolean
-  type?: string
-  appendInnerIcon?: string | (new () => any) | FunctionalComponent
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  required: false,
-  type: 'text',
-  placeholder: undefined,
-  label: undefined,
-  appendInnerIcon: undefined
+const props = defineProps({
+  modelValue: {
+    type: String
+  },
+  label: {
+    type: String,
+    default: undefined
+  },
+  placeholder: {
+    type: String,
+    default: undefined
+  },
+  autocomplete: {
+    type: String,
+    default: undefined
+  },
+  required: {
+    type: Boolean,
+    default: false
+  },
+  type: {
+    type: String as PropType<'number' | 'button' | 'time' | 'image' | 'text' | 'hidden' | 'color' | 'search' | 'submit' | 'reset' | 'date' | 'checkbox' | 'file' | 'datetime-local' | 'email' | 'month' | 'password' | 'radio' | 'range' | 'tel' | 'url' | 'week'>,
+    default: 'text'
+  }
 })
 const emit = defineEmits<{
   (e: 'update:modelValue', value: number | string | undefined): void
-  (e: 'click:appendInner'): void
 }>()
 const model = computed({
   get () {
@@ -46,27 +54,3 @@ const model = computed({
   }
 })
 </script>
-<style lang="scss">
-.input-text {
-  .v-field__outline {
-    &__start,
-    &__notch::before,
-    &__notch::after,
-    &__end {
-      border-color: #69A297 !important;
-    }
-
-    &__notch {
-      border-width: 0 !important;
-    }
-  }
-  .v-field--variant-solo {
-    @apply shadow;
-  }
-}
-</style>
-
-<style lang="scss">
-.input-text {
-}
-</style>
