@@ -1,43 +1,53 @@
 <template>
   <div>
-    <Table hoverable>
-      <table-head>
-        <table-head-cell v-for="header in headers" :key="header.key">
+    <fwb-table hoverable>
+      <fwb-table-head class="!bg-brand-light-white">
+        <fwb-table-head-cell v-for="header in headers" :key="header.key">
           {{ header.title }}
-        </table-head-cell>
-        <table-head-cell><span class="sr-only">Edit</span></table-head-cell>
-      </table-head>
-      <table-body>
-        <table-row v-for="patient in patients" :key="patient.name" @click="goToPatient(patient)">
-          <table-cell>
+        </fwb-table-head-cell>
+        <fwb-table-head-cell><span class="sr-only">Edit</span></fwb-table-head-cell>
+      </fwb-table-head>
+      <fwb-table-body>
+        <fwb-table-row v-for="patient in paginatedPatients" :key="patient.name" @click="goToPatient(patient)">
+          <fwb-table-cell>
             {{ patient.name }}
-          </table-cell>
-          <table-cell>
+          </fwb-table-cell>
+          <fwb-table-cell>
             {{ patient.lastName }}
-          </table-cell>
-          <table-cell>
-            <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
-          </table-cell>
-        </table-row>
-      </table-body>
-    </Table>
-    <Pagination v-model="currentPage" :total-pages="patients.length/10" :slice-length="4" />
+          </fwb-table-cell>
+          <fwb-table-cell />
+          <!--          <table-cell>-->
+          <!--            <a :href="`/patients/${patient.uid}`" class="font-medium text-brand-primary hover:underline">Edit</a>-->
+          <!--          </table-cell>-->
+        </fwb-table-row>
+      </fwb-table-body>
+    </fwb-table>
+    <fwb-pagination
+      v-model="currentPage"
+      class="mt-4"
+      show-icons
+      :per-page="patientsPerPage"
+      :total-pages="patientsStore.patients.length/patientsPerPage + 1"
+      :slice-length="4"
+      :show-labels="false"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
-import { Pagination, Table, TableHead, TableBody, TableHeadCell, TableRow, TableCell } from 'flowbite-vue'
+import { FwbPagination, FwbTable, FwbTableHead, FwbTableBody, FwbTableHeadCell, FwbTableRow, FwbTableCell } from 'flowbite-vue'
 import { usePatientsStore } from '~/stores/patients'
 import { Patient } from '~/types/patient'
 
 const currentPage = ref(1)
+const patientsPerPage = 9
 const headers = [
   { title: 'Name', key: 'name' },
   { title: 'Last Name', key: 'lastName' }
 ]
 const patientsStore = usePatientsStore()
-const { patients } = storeToRefs(patientsStore)
+const paginatedPatients: Patient[] = computed(() => patientsStore.patients.slice((currentPage.value - 1) * patientsPerPage, currentPage.value * patientsPerPage))
+
 const goToPatient = (patient: Patient) => {
   const { push } = useRouter()
   push(`/patients/${patient.uid}`)

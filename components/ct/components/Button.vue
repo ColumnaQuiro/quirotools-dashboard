@@ -1,5 +1,5 @@
 <template>
-  <Button
+  <fwb-button
     :class="[
       `bg-brand-${color} hover:bg-brand-${color} rounded-lg text-white font-medium`,
       {
@@ -18,10 +18,10 @@
     @click="click"
   >
     <slot />
-  </Button>
+  </fwb-button>
 </template>
 <script setup lang="ts">
-import { Button } from 'flowbite-vue'
+import { FwbButton } from 'flowbite-vue'
 
 interface Props {
   /**

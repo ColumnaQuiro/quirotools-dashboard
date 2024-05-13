@@ -80,31 +80,31 @@
         <div ref="blindSpotRightDistanceDifference" class="text-sm" />
       </div>
     </div>
-    <ct-components-button color="tertiary" size="large" @click="exportToPDF">
+    <ct-components-button color="tertiary" @click="exportToPDF">
       Export to PDF
     </ct-components-button>
   </div>
 </template>
 <script setup lang="ts">
 import { Ref } from 'vue'
-import { VBtn } from 'vuetify/components'
+import { FwbButton } from 'flowbite-vue'
 import { storeToRefs } from 'pinia'
 import DualBlindSpotMappingTest from '~/models/BlindSpotMapping'
 import { useSidePanelStore } from '~/stores/sidePanel'
 
 const blindSpotTopCanvas: Ref<HTMLCanvasElement | null> = ref(null)
-const blindSpotTopLeftButton: Ref<VBtn | null> = ref(null)
-const blindSpotTopRightButton: Ref<VBtn | null> = ref(null)
-const blindSpotTopResetButton: Ref<VBtn | null> = ref(null)
+const blindSpotTopLeftButton: Ref<typeof FwbButton | null> = ref(null)
+const blindSpotTopRightButton: Ref<typeof FwbButton | null> = ref(null)
+const blindSpotTopResetButton: Ref<typeof FwbButton | null> = ref(null)
 const blindSpotTopLeftPolygonArea: Ref<HTMLElement | null> = ref(null)
 const blindSpotTopRightPolygonArea: Ref<HTMLElement | null> = ref(null)
 const blindSpotTopLeftDotDistance: Ref<HTMLElement | null> = ref(null)
 const blindSpotTopRightDotDistance: Ref<HTMLElement | null> = ref(null)
 
 const blindSpotBottomCanvas: Ref<HTMLCanvasElement | null> = ref(null)
-const blindSpotBottomLeftButton: Ref<VBtn | null> = ref(null)
-const blindSpotBottomRightButton: Ref<VBtn | null> = ref(null)
-const blindSpotBottomResetButton: Ref<VBtn | null> = ref(null)
+const blindSpotBottomLeftButton: Ref<typeof FwbButton | null> = ref(null)
+const blindSpotBottomRightButton: Ref<typeof FwbButton | null> = ref(null)
+const blindSpotBottomResetButton: Ref<typeof FwbButton | null> = ref(null)
 const blindSpotBottomLeftPolygonArea: Ref<HTMLElement | null> = ref(null)
 const blindSpotBottomRightPolygonArea: Ref<HTMLElement | null> = ref(null)
 const blindSpotBottomLeftDotDistance: Ref<HTMLElement | null> = ref(null)

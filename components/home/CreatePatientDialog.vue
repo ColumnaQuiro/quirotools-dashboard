@@ -1,5 +1,5 @@
 <template>
-  <Modal size="lg" @close="onCloseDialog">
+  <fwb-modal size="lg" @close="onCloseDialog">
     <template #header>
       <div class="text-2xl text-center">
         Create Patient
@@ -23,7 +23,6 @@
         </div>
         <div class="flex w-full justify-end pt-8">
           <ct-components-button
-            color="white"
             class="mr-4"
             @click="onCloseDialog"
           >
@@ -37,11 +36,11 @@
         </div>
       </form>
     </template>
-  </Modal>
+  </fwb-modal>
 </template>
 <script setup lang="ts">
 import { Ref } from 'vue'
-import { Modal } from 'flowbite-vue'
+import { FwbModal } from 'flowbite-vue'
 import { Patient } from '~/types/patient'
 import { usePatientsStore } from '~/stores/patients'
 

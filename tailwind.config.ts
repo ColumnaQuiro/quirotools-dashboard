@@ -26,7 +26,8 @@ module.exports = {
         'brand-light': {
           primary: '#69A29780',
           tertiary: '#F2B88080',
-          quaternary: '#E7CFBC80'
+          quaternary: '#E7CFBC80',
+          white: '#FFF9F5'
         }
       }
     },

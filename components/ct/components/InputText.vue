@@ -3,7 +3,7 @@
     <label class="block mb-2 text-sm font-medium text-brand-black">
       {{ label }}
     </label>
-    <Input
+    <fwb-input
       v-model="model"
       :type="type"
       :placeholder="placeholder"
@@ -14,7 +14,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { Input } from 'flowbite-vue'
+import { FwbInput } from 'flowbite-vue'
 import { PropType } from 'vue'
 
 const props = defineProps({

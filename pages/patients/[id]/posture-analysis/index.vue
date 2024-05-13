@@ -4,12 +4,21 @@
       {{ patientsStore.currentPatient?.name }}
       {{ patientsStore.currentPatient?.lastName }}
     </div>
-    <ct-components-button variant="flat" color="tertiary" @click="exportPosturesToPDF">
-      Export to PDF
-    </ct-components-button>
-    <div class="grid gap-4 grid-cols-1 lg:grid-cols-2 pt-8">
-      <ct-components-posture-analysis id="left" />
-      <ct-components-posture-analysis id="right" />
+    <div class="rounded-2xl bg-white p-5 h-full">
+      <ct-components-button color="tertiary" @click="exportPosturesToPDF">
+        Export to PDF
+      </ct-components-button>
+      <ct-components-button @click="createTab">
+        Create new tab
+      </ct-components-button>
+      <fwb-tabs v-model="activeTab" class="p-5">
+        <fwb-tab v-for="tab in tabs" :key="tab" :name="tab" :title="tab">
+          <div class="grid gap-4 grid-cols-1 lg:grid-cols-2 pt-8">
+            <ct-components-posture-analysis id="left" :tab-name="tab" />
+            <ct-components-posture-analysis id="right" :tab-name="tab" />
+          </div>
+        </fwb-tab>
+      </fwb-tabs>
     </div>
   </div>
 </template>

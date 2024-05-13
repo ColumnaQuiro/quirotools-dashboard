@@ -20,6 +20,7 @@ interface State {
 }
 
 interface Getters extends StateTree {
+  getPatientById(): (id: string) => Patient | undefined
 }
 
 interface Actions {
@@ -36,6 +37,11 @@ export const usePatientsStore = defineStore<'patients', State, Getters, Actions>
     currentPatient: undefined,
     isLoading: false
   }),
+  getters: {
+    getPatientById () {
+      return (id: string) => this.patients.find(patient => patient.uid === id)
+    }
+  },
   actions: {
     async fetchPatients () {
       const db = useFirestore()
@@ -93,7 +99,7 @@ export const usePatientsStore = defineStore<'patients', State, Getters, Actions>
       this.patients = this.patients.filter(patient => patient.uid !== patientId)
     },
     setCurrentPatient (id) {
-      this.currentPatient = this.patients.find(patient => patient.uid === id)
+      this.currentPatient = this.getPatientById(id)
     }
   }
 })

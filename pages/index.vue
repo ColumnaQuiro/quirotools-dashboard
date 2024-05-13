@@ -3,7 +3,7 @@
     <div class="text-2xl font-semibold text-center pb-8">
       Patients
     </div>
-    <div class="rounded-2xl bg-white p-5 h-full">
+    <div v-if="!patientsStore.isLoading" class="rounded-2xl bg-white p-5 h-full">
       <div v-if="patientsStore.patients.length > 0">
         <div class="text-right pb-8">
           <ct-components-button @click="onCreatePatientButtonClicked">
@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { Ref } from 'vue'
+import { type Ref } from 'vue'
 import { usePatientsStore } from '~/stores/patients'
 
 definePageMeta({

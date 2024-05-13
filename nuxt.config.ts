@@ -18,10 +18,11 @@ export default defineNuxtConfig({
     preset: 'netlify'
   },
   css: [
-    '~/assets/scss/main.scss'
+    '~/assets/scss/main.scss',
+    '/node_modules/flowbite-vue/dist/index.css'
   ],
   modules: [
-    '@nuxtjs/critters',
+    // '@nuxt/ui',
     'nuxt-gtag',
     'nuxt-vuefire',
     '@pinia/nuxt'
@@ -43,11 +44,6 @@ export default defineNuxtConfig({
       storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
       messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
       appId: process.env.FIREBASE_APP_ID
-    }
-  },
-  vuetify: {
-    moduleOptions: {
-      importComposables: false
     }
   },
   postcss: {

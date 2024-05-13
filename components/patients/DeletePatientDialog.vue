@@ -1,5 +1,5 @@
 <template>
-  <Modal size="md" @close="onCloseDialog">
+  <fwb-modal size="md" @close="onCloseDialog">
     <template #body>
       <div class="font-medium">
         Are you sure you want to delete the patient?
@@ -23,10 +23,10 @@
         </ct-components-button>
       </div>
     </template>
-  </Modal>
+  </fwb-modal>
 </template>
 <script setup lang="ts">
-import { Modal } from 'flowbite-vue'
+import { FwbModal } from 'flowbite-vue'
 import { usePatientsStore } from '~/stores/patients'
 
 const props = defineProps({

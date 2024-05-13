@@ -9,11 +9,11 @@
         height="700"
         @click="handleCanvasClick"
       />
-      <FileInput v-else :dropzone="true" class="posture-analysis__file-input" @update:model-value="handleFileUpload">
+      <fwb-file-input v-else :dropzone="true" class="posture-analysis__file-input" @update:model-value="handleFileUpload">
         <p class="!mt-1 text-xs text-gray-500 dark:text-gray-400">
           SVG, PNG, JPG or GIF
         </p>
-      </FileInput>
+      </fwb-file-input>
     </div>
     <div class="flex flex-row">
       <ct-components-button
@@ -39,7 +39,7 @@
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h16M7 8v8m4-8v8M7 1h4a1 1 0 0 1 1 1v3H6V2a1 1 0 0 1 1-1ZM3 5h12v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5Z" />
         </svg>
       </ct-components-button>
-      <spinner v-if="uploadingImage" size="12" color="green" />
+      <fwb-spinner v-if="uploadingImage" size="12" color="green" />
     </div>
   </div>
 </template>
@@ -48,8 +48,8 @@
 
 import { storeToRefs } from 'pinia'
 import { getCurrentUser } from 'vuefire'
-import { Ref } from 'vue'
-import { FileInput, Spinner } from 'flowbite-vue'
+import { PropType, Ref } from 'vue'
+import { FwbFileInput, FwbSpinner } from 'flowbite-vue'
 import { usePatientsStore } from '~/stores/patients'
 import { BackPositionState, Patient, Position } from '~/types/patient'
 import { useFireBaseStorage } from '~/composables/storage'
@@ -142,11 +142,9 @@ const handleFileUpload = (file: File) => {
     await fileData.upload(file)
     uploadingImage.value = false
     imageUrl.value = fileData.url.value
-    console.log(imageUrl.value)
     const image = new Image()
     image.crossOrigin = 'anonymous'
     image.onload = () => {
-      clearState()
       const canvas = canvasRef.value
       const ctx = canvas?.getContext('2d')
       if (ctx && canvas) {

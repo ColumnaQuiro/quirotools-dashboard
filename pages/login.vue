@@ -26,7 +26,7 @@
           autocomplete="current-password"
         />
       </div>
-      <ct-components-button ref="blindSpotTopLeftButton" type="submit">
+      <ct-components-button type="submit">
         Sign In
       </ct-components-button>
       <div class="text-center pt-4">
@@ -54,7 +54,7 @@ import {
   browserLocalPersistence,
   getAuth,
   signInWithEmailAndPassword,
-  UserCredential
+  type UserCredential
 } from '@firebase/auth'
 import { useFirebaseAuth } from 'vuefire'
 import { STATICS_CDN } from '~/constants/urls'
@@ -68,6 +68,7 @@ const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
 const router = useRouter()
+
 const login = async () => {
   try {
     const auth = getAuth()
