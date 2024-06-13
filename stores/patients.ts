@@ -1,7 +1,7 @@
-import { defineStore, StateTree } from 'pinia'
+import { defineStore, type StateTree } from 'pinia'
 import {
   addDoc,
-  collection,
+  collection, deleteDoc,
   doc,
   getDocs,
   query,
@@ -9,7 +9,7 @@ import {
   where
 } from 'firebase/firestore'
 import { useFirestore } from 'vuefire'
-import type { Patient } from '~/types/patient'
+import type { Patient, PostureAnalysisKey, PostureAnalysisState } from '~/types/patient'
 import { useChiropractorStore } from '~/stores/chiropractor'
 import { useUtils } from '~/composables/utils'
 
@@ -20,10 +20,16 @@ interface State {
 }
 
 interface Getters extends StateTree {
+  getPatientById(): (id: string) => Patient | undefined
+  getPatientPosture(): (tabName: string, id: PostureAnalysisKey) => PostureAnalysisState | undefined
 }
 
 interface Actions {
-
+  fetchPatients(): Promise<void>
+  createPatient(patient: Patient): Promise<void>
+  updatePatient(patient: Partial<Patient>, id?: string | null): Promise<void>
+  deletePatient(patientId: string): Promise<void>
+  setCurrentPatient(id: string): void
 }
 
 export const usePatientsStore = defineStore<'patients', State, Getters, Actions>('patients', {
@@ -32,6 +38,20 @@ export const usePatientsStore = defineStore<'patients', State, Getters, Actions>
     currentPatient: undefined,
     isLoading: false
   }),
+  getters: {
+    getPatientById () {
+      return id => this.patients.find(patient => patient.uid === id)
+    },
+    getPatientPosture () {
+      return (tabName, id) => {
+        if (!this.currentPatient?.uid) {
+          return undefined
+        }
+        const stringState = this.currentPatient?.postureAnalysis?.[tabName]?.[id]
+        return !stringState ? undefined : JSON.parse(stringState) as PostureAnalysisState
+      }
+    }
+  },
   actions: {
     async fetchPatients () {
       const db = useFirestore()
@@ -59,8 +79,7 @@ export const usePatientsStore = defineStore<'patients', State, Getters, Actions>
         this.isLoading = false
       }
     },
-
-    async createPatient (patient: Patient) {
+    async createPatient (patient) {
       const db = useFirestore()
       const patientCollection = collection(db, 'patients')
       const { chiropractor, updateChiropractor } = useChiropractorStore()
@@ -77,14 +96,21 @@ export const usePatientsStore = defineStore<'patients', State, Getters, Actions>
         console.error(e)
       }
     },
-    async updatePatient (patient: Partial<Patient>, id: string | null = null) {
+    async updatePatient (patient: Partial<Patient>, id = null) {
       const db = useFirestore()
       const patientId = id || this.currentPatient?.uid
       const patientDocRef = patientId && doc(db, 'patients', patientId)
       patientDocRef && await setDoc(patientDocRef, patient, { merge: true })
     },
-    setCurrentPatient (id: string) {
-      this.currentPatient = this.patients.find(patient => patient.uid === id)
+    async deletePatient (patientId) {
+      const db = useFirestore()
+      const patientDocRef = doc(db, 'patients', patientId)
+      await deleteDoc(patientDocRef)
+      this.patients = this.patients.filter(patient => patient.uid !== patientId)
+    },
+    setCurrentPatient (id) {
+      this.currentPatient = this.getPatientById(id)
+      this.currentPatient!.postureCanvas = {}
     }
   }
 })

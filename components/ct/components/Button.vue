@@ -1,25 +1,27 @@
 <template>
-  <v-btn
-    class="button"
+  <fwb-button
+    :class="[
+      `bg-brand-${color} hover:bg-brand-${color} rounded-lg text-white font-medium`,
+      {
+        'bg-brand-primary hover:bg-brand-primary': color === 'primary',
+        'bg-brand-tertiary hover:bg-brand-tertiary': color === 'tertiary',
+        'bg-brand-red hover:bg-brand-red': color === 'red',
+        'bg-gray hover:bg-gray': color === 'gray'
+      }
+    ]"
     :disabled="disabled"
     :tag="tag"
-    :block="block"
-    :icon="icon"
-    :variant="variant"
     :size="size"
+    :color="undefined"
     :to="to"
     :href="href"
-    :color="color"
-    :type="type"
-    :flat="true"
-    :rounded="true"
     @click="click"
   >
     <slot />
-  </v-btn>
+  </fwb-button>
 </template>
 <script setup lang="ts">
-import { FunctionalComponent } from 'vue'
+import { FwbButton } from 'flowbite-vue'
 
 interface Props {
   /**
@@ -31,14 +33,6 @@ interface Props {
    */
   disabled?: boolean,
   /**
-   * Expands the button to 100% of available space
-   */
-  block?: boolean,
-  /**
-   * Designates the button as icon. Button will become round and applies the text prop
-   */
-  icon?: boolean | string | (new () => any) | FunctionalComponent,
-  /**
    * Denotes the target route of the link
    */
   to?: string | undefined,
@@ -47,35 +41,22 @@ interface Props {
    */
   href?: string,
   /**
-   * Applies one of 6 styles: elevated, flat, tonal, outlined, text, and plain.
-   */
-  variant?: 'flat' | 'text' | 'elevated' | 'tonal' | 'outlined' | 'plain',
-  /**
    * Sets the height and width of the component. Default unit is px. Can also use the following predefined sizes: x-small, small, default, large, and x-large.
    */
-  size?: 'x-small' | 'small' | 'default' | 'large' | 'x-large',
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   /**
    * Applies specified color to the control - it can be the name of material color (for example success or purple) or css color (#033 or rgba(255, 0, 0, 0.5))
    */
-  color?: string
-  /**
-   * Designates the button type
-   */
-  type?: string
+  color?: 'primary' | 'tertiary' | 'red' | 'gray'
 }
 
 withDefaults(defineProps<Props>(), {
   disabled: false,
-  block: false,
-  text: false,
   color: 'primary',
-  size: 'default',
+  size: 'md',
   href: undefined,
-  variant: 'elevated',
   to: undefined,
-  icon: false,
-  tag: 'button',
-  type: 'button'
+  tag: 'button'
 })
 
 const emit = defineEmits<{(e: 'click'): void }>()
@@ -84,8 +65,3 @@ const click = () => {
   emit('click')
 }
 </script>
-<style lang="scss" scoped>
-.button {
-  text-transform: none !important;
-}
-</style>

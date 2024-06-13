@@ -401,6 +401,7 @@ export default class DualBlindSpotMappingTest {
   }
 
   async exportPDF (): Promise<void> {
+    useTrackEvent('export-blindspot-pdf')
     // eslint-disable-next-line new-cap
     const doc = new jsPDF('l', 'mm', 'a4')
 

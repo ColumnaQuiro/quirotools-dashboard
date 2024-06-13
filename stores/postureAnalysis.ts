@@ -1,4 +1,4 @@
-import { defineStore, StateTree } from 'pinia'
+import { defineStore, type StateTree } from 'pinia'
 
 export type PostureKey = 'left' | 'right'
 
@@ -8,7 +8,9 @@ export interface Posture {
 }
 
 export type Postures = {
-  [key in PostureKey]?: Posture
+  [key: string]: {
+    [key in PostureKey]?: Posture
+  }
 }
 
 interface State {
@@ -20,9 +22,6 @@ interface Actions {}
 
 export const usePostureAnalysisStore = defineStore<'posture-analysis', State, Getters, Actions>('posture-analysis', {
   state: () => ({
-    postures: {
-      left: undefined,
-      right: undefined
-    }
+    postures: {}
   })
 })

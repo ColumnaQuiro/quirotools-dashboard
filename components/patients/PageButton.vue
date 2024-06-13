@@ -1,5 +1,5 @@
 <template>
-  <nuxt-link :to="to" class="page-button" :class="`${background}`">
+  <nuxt-link no-prefetch :to="to" class="page-button" :class="`${background}`">
     <div class="text-xl font-medium">
       {{ text }}
     </div>

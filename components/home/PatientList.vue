@@ -1,58 +1,62 @@
 <template>
   <div>
-    <client-only>
-      <v-data-table
-        v-model:items-per-page="itemsPerPage"
-        :loading="isLoading && patients.length === 0"
-        :headers="headers"
-        :items="patients"
-        :items-length="patients.length"
-        height="300px"
-        width="100%"
-        @click:row="goToPatient"
-      >
-        <template #no-data>
-          No patients created yet. <span class="underline cursor-pointer" @click="emit('createNewPatient')">Create new patient</span>
-        </template>
-      </v-data-table>
-    </client-only>
+    <div class="flex px-3 py-3.5 border-b border-gray-200">
+      <UInput v-model="search" placeholder="Filter patients..." />
+    </div>
+    <UTable :rows="rows" :columns="columns" @select="goToPatient" />
+    <div class="flex flex-wrap justify-between items-center">
+      <UPagination
+        v-model="page"
+        :page-count="pageCount"
+        :total="patientsStore.patients.length"
+        :ui="{
+          wrapper: 'flex items-center gap-1',
+          rounded: '!rounded-full min-w-[32px] justify-center',
+          default: {
+            activeButton: {
+              variant: 'outline'
+            }
+          }
+        }"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
-import { Ref } from 'vue'
+
 import { usePatientsStore } from '~/stores/patients'
-import { Patient } from '~/types/patient'
+import type { Patient } from '~/types/patient'
 
-interface SelectableItem {
-  value: any;
-  selectable: boolean;
-}
-
-interface GroupableItem<T = any> {
-  type: 'item';
-  raw: T;
-}
-
-interface DataTableItem<T = any> extends GroupableItem<T>, SelectableItem {
-  key: any;
-  index: number;
-  columns: {
-    [key: string]: any;
-  };
-}
-
-const emit = defineEmits(['createNewPatient'])
-const itemsPerPage: Ref<number> = ref(5)
-const headers = [
-  { title: 'Name', key: 'name' },
-  { title: 'Last Name', key: 'lastName' }
+const search = ref('')
+const page = ref(1)
+const pageCount = 9
+const columns = [
+  { label: 'Name', key: 'name', sortable: true },
+  { label: 'Last Name', key: 'lastName', sortable: true }
 ]
 const patientsStore = usePatientsStore()
-const { patients, isLoading } = storeToRefs(patientsStore)
-const goToPatient = (_event: Event, { item: patient }: {item: DataTableItem<Patient>}) => {
+const rows = computed(() => {
+  const allPatients = patientsStore.patients || []
+  const searchTerm = search.value?.toLowerCase() || ''
+
+  let filteredPatients = allPatients
+  if (searchTerm) { // If there is a search term, filter patients
+    filteredPatients = allPatients.filter(patient =>
+      Object.values(patient).some(value =>
+        String(value).toLowerCase().includes(searchTerm)
+      )
+    )
+  }
+
+  // Apply pagination
+  const start = (page.value - 1) * pageCount
+  const end = page.value * pageCount
+  return filteredPatients.slice(start, end)
+})
+
+const goToPatient = (patient: Patient) => {
   const { push } = useRouter()
-  push(`/patients/${patient.raw.uid}`)
+  push(`/patients/${patient.uid}`)
 }
 </script>

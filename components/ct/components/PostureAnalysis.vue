@@ -1,63 +1,46 @@
 <template>
-  <div class="canvas-container">
-    <div class="canvas-wrapper">
+  <div class="posture-analysis">
+    <div class="posture-analysis__canvas-wrapper">
       <canvas
+        v-if="imageUrl"
         ref="canvasRef"
-        class="canvas"
+        class="posture-analysis__canvas"
         width="465"
         height="700"
         @click="handleCanvasClick"
       />
-    </div>
-    <div class="flex flex-row">
-      <v-file-input
-        :clearable="false"
-        variant="solo-filled"
-        prepend-inner-icon="mdi-camera"
-        prepend-icon=""
-        :hide-details="true"
-        base-color="secondary"
-        bg-color="secondary"
-        color="secondary"
-        :flat="true"
-        density="compact"
-        :rounded="true"
-        :single-line="true"
-        class="mr-3"
+      <fwb-file-input
+        v-else
+        :dropzone="true"
+        class="posture-analysis__file-input"
         @update:model-value="handleFileUpload"
-      />
+      >
+        <p class="!mt-1 text-xs text-gray-500 dark:text-gray-400">
+          SVG, PNG, JPG or GIF
+        </p>
+      </fwb-file-input>
+    </div>
+    <div class="flex flex-row items-center">
       <ct-components-button
-        :disabled="verticalDots.length < 2"
+        :disabled="verticalDots.length < 2 || verticalLineFinished"
         class="mr-3"
-        color="secondary"
         @click="drawLine"
       >
         Draw Y-axis
       </ct-components-button>
       <ct-components-button
         class="mr-3"
-        color="secondary"
         :disabled="horizontalDots.length < 2"
         @click="drawHorizontalLines"
       >
         Draw Horizontal Lines
       </ct-components-button>
-      <ct-components-button
-        icon
-        size="small"
-        variant="flat"
-        color="tertiary"
-        class="mr-3 !rounded-3xl"
+      <UIcon
+        name="i-heroicons-x-circle-16-solid"
+        class="block text-3xl text-brand-red cursor-pointer"
         @click="clearState"
-      >
-        <v-icon>mdi-eraser</v-icon>
-      </ct-components-button>
-      <v-progress-circular
-        v-if="uploadingImage"
-        indeterminate
-        color="secondary"
-        class="mt-1"
       />
+      <fwb-spinner v-if="uploadingImage" size="12" color="green" />
     </div>
   </div>
 </template>
@@ -66,17 +49,18 @@
 
 import { storeToRefs } from 'pinia'
 import { getCurrentUser } from 'vuefire'
-import { Ref } from 'vue'
+import { type PropType, type Ref } from 'vue'
+import { FwbFileInput, FwbSpinner } from 'flowbite-vue'
 import { usePatientsStore } from '~/stores/patients'
-import { BackPositionState, Patient, Position } from '~/types/patient'
+import { type PostureAnalysisState, type Patient, type Position, type PostureAnalysisKey } from '~/types/patient'
 import { useFireBaseStorage } from '~/composables/storage'
-import { PostureKey, usePostureAnalysisStore } from '~/stores/postureAnalysis'
+import { type PostureKey } from '~/stores/postureAnalysis'
 
 const firebaseStorage = useFireBaseStorage()
 const patientsStore = usePatientsStore()
 const canvasRef: Ref<HTMLCanvasElement | undefined> = ref()
 const ctxRef: Ref<CanvasRenderingContext2D | undefined> = ref()
-const imageUrl: Ref<string | null | undefined> = ref('')
+const imageUrl: Ref<string | null | undefined> = ref()
 const verticalLineFinished = ref(false)
 const uploadingImage = ref(false)
 const verticalDots: Position[] = reactive([])
@@ -86,6 +70,10 @@ const { currentPatient } = storeToRefs(patientsStore)
 
 const props = defineProps({
   id: {
+    type: String as PropType<PostureAnalysisKey>,
+    required: true
+  },
+  tabName: {
     type: String,
     required: true
   }
@@ -148,9 +136,8 @@ const drawLine = () => {
   ctx.stroke()
 }
 
-const handleFileUpload = (files: File[]) => {
+const handleFileUpload = (file: File) => {
   uploadingImage.value = true
-  const file = files[0]
   const reader = new FileReader()
   reader.onload = async (e) => {
     const currentUser = await getCurrentUser()
@@ -158,22 +145,36 @@ const handleFileUpload = (files: File[]) => {
     const imagePath = `back-position/${currentUser?.uid}/${currentPatient?.value?.uid}/${props.id}.${imageExt}`
     const fileData = firebaseStorage.prepareUploadFile(imagePath)
     await fileData.upload(file)
-    uploadingImage.value = false
-    imageUrl.value = fileData.url.value
-    const image = new Image()
-    image.crossOrigin = 'anonymous'
-    image.onload = () => {
-      clearState()
-      const canvas = canvasRef.value
-      const ctx = canvas?.getContext('2d')
-      if (ctx && canvas) {
-        ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
-        ctx.lineWidth = 2
-        ctxRef.value = ctx
-        saveStateToLocalStorage()
-      }
+    // Retry logic
+    let attempts = 0
+    const maxAttempts = 10 // Maximum retry attempts
+    const retryDelay = 500 // Delay between retries in ms
+
+    while (attempts < maxAttempts && !fileData.url.value) {
+      await new Promise(resolve => setTimeout(resolve, retryDelay))
+      attempts++
+      console.log(`Retrying to get file URL, attempt: ${attempts}`)
     }
-    image.src = e.target?.result as string || ''
+
+    if (fileData.url.value) {
+      uploadingImage.value = false
+      imageUrl.value = fileData.url.value
+      const image = new Image()
+      image.crossOrigin = 'anonymous'
+      image.onload = () => {
+        const canvas = canvasRef.value
+        const ctx = canvas?.getContext('2d')
+        if (ctx && canvas) {
+          ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
+          ctx.lineWidth = 2
+          ctxRef.value = ctx
+          saveStateToLocalStorage()
+        }
+      }
+      image.src = e.target?.result as string || ''
+    } else {
+      throw new Error('Failed to obtain file URL after maximum attempts')
+    }
   }
   reader.readAsDataURL(file)
 }
@@ -262,37 +263,56 @@ const drawHorizontalLines = () => {
 }
 
 const saveStateToLocalStorage = () => {
-  if (!imageUrl.value) {
+  const patientStore = usePatientsStore()
+  if (!imageUrl.value || !patientStore.currentPatient) {
     return
   }
-  const state: BackPositionState = {
+  const state: PostureAnalysisState = {
     imageUrl: imageUrl.value,
     verticalDots,
     horizontalDots,
-    horizontalPairs
-  }
-  const postureAnalysisStore = usePostureAnalysisStore()
-  postureAnalysisStore.postures[props.id as PostureKey] = {
-    canvas: canvasRef.value,
-    imageUrl: imageUrl.value
+    horizontalPairs,
+    canvasDataUrl: canvasRef.value?.toDataURL('image/jpeg', 1.0) || ''
   }
 
+  if (!patientStore.currentPatient.postureCanvas) {
+    patientStore.currentPatient.postureCanvas = {}
+  }
+
+  if (!patientStore.currentPatient.postureCanvas[props.tabName]) {
+    patientStore.currentPatient.postureCanvas[props.tabName] = {}
+  }
+
+  patientStore.currentPatient!.postureCanvas[props.tabName][props.id as PostureKey] = canvasRef.value
+
+  if (!patientStore.currentPatient.postureAnalysis) {
+    patientStore.currentPatient.postureAnalysis = {}
+  }
+
+  if (!patientStore.currentPatient.postureAnalysis[props.tabName]) {
+    patientStore.currentPatient.postureAnalysis[props.tabName] = {}
+  }
+
+  patientStore.currentPatient.postureAnalysis[props.tabName][props.id as PostureAnalysisKey] = JSON.stringify(state)
+
   const patientStateUpdated: Partial<Patient> = {
-    backPosition: {
-      [props.id]: JSON.stringify(state)
+    postureAnalysis: {
+      [props.tabName]: {
+        [props.id as PostureAnalysisKey]: JSON.stringify(state)
+      }
     }
   }
   const patientsStore = usePatientsStore()
   patientsStore.updatePatient(patientStateUpdated)
+  // patientsStore.fetchPatients()
 }
 
 // Function to load the state from localStorage
 const loadStateFromLocalStorage = () => {
   const patientsStore = usePatientsStore()
-  const savedState = patientsStore.currentPatient?.backPosition?.[props.id]
+  const savedState = patientsStore.getPatientPosture(props.tabName, props.id)
   if (savedState) {
-    const backPositionState: BackPositionState = JSON.parse(savedState)
-    imageUrl.value = backPositionState.imageUrl
+    imageUrl.value = savedState.imageUrl
     const image = new Image()
     image.crossOrigin = 'anonymous'
     image.onload = () => {
@@ -308,10 +328,10 @@ const loadStateFromLocalStorage = () => {
         drawHorizontalLines()
       }
     }
-    image.src = backPositionState.imageUrl
-    verticalDots.splice(0, verticalDots.length, ...backPositionState.verticalDots)
-    horizontalDots.splice(0, horizontalDots.length, ...backPositionState.horizontalDots)
-    horizontalPairs.splice(0, horizontalPairs.length, ...backPositionState.horizontalPairs)
+    image.src = savedState.imageUrl
+    verticalDots.splice(0, verticalDots.length, ...savedState.verticalDots)
+    horizontalDots.splice(0, horizontalDots.length, ...savedState.horizontalDots)
+    horizontalPairs.splice(0, horizontalPairs.length, ...savedState.horizontalPairs)
   }
 }
 
@@ -320,6 +340,7 @@ const clearState = () => {
   horizontalDots.splice(0, horizontalDots.length)
   horizontalPairs.splice(0, horizontalPairs.length)
   canvasRef.value?.getContext('2d')?.clearRect(0, 0, canvasRef.value?.width, canvasRef.value?.height)
+  imageUrl.value = undefined
 }
 
 onMounted(() => {
@@ -347,37 +368,40 @@ watchEffect(() => {
   }
 }
 </style>
-<style lang="scss" scoped>
+<style lang="scss">
 $canvas-width: 465px;
 
-.canvas-container {
+.posture-analysis {
   position: relative;
   height: 900px;
-}
 
-.canvas-wrapper {
-  position: relative;
-  width: $canvas-width;
-}
+  &__canvas-wrapper {
+    position: relative;
+    width: $canvas-width;
+  }
 
-.canvas-image {
-  position: absolute;
-  top: 80px;
-  left: 0;
-  pointer-events: none;
-  width: $canvas-width;
-  height: 700px;
-  object-fit: cover;
-}
+  &__canvas {
+    position: absolute;
+    top: 80px;
+    left: 0;
+    border: 1px solid #ababab;
+    border-radius: 8px;
+  }
 
-.canvas {
-  position: absolute;
-  top: 80px;
-  left: 0;
-  border: 1px solid #000000;
-}
+  &__file-input {
+    position: absolute;
+    top: 80px;
+    left: 0;
+    width: 465px;
+    height: 700px;
 
-.toggle-button {
-  margin-top: 10px;
+    div:nth-child(1) {
+      @apply h-full;
+    }
+
+    label {
+      @apply h-full;
+    }
+  }
 }
 </style>

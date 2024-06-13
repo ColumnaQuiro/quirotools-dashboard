@@ -1,7 +1,7 @@
-import { loadStripe, StripeError } from '@stripe/stripe-js'
-import { Stripe } from '@stripe/stripe-js/types/stripe-js'
-import { User } from '@firebase/auth'
-import { PaymentMode, StripeCheckoutItem } from '~/types/stripe'
+import { loadStripe, type StripeError } from '@stripe/stripe-js'
+import { type Stripe } from '@stripe/stripe-js/types/stripe-js'
+import { type User } from '@firebase/auth'
+import { type PaymentMode, type StripeCheckoutItem } from '~/types/stripe'
 
 export const useStripe = () => {
   let stripe: Stripe | null

@@ -1,4 +1,4 @@
-import { LayoutKey } from '#build/types/layouts'
+import { type LayoutKey } from '#build/types/layouts'
 
 interface Layouts {
   DEFAULT: LayoutKey,
