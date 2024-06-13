@@ -1,4 +1,4 @@
-import { defineStore, StateTree } from 'pinia'
+import { defineStore, type StateTree } from 'pinia'
 import {
   addDoc,
   collection, deleteDoc,
@@ -9,7 +9,7 @@ import {
   where
 } from 'firebase/firestore'
 import { useFirestore } from 'vuefire'
-import type { Patient } from '~/types/patient'
+import type { Patient, PostureAnalysisKey, PostureAnalysisState } from '~/types/patient'
 import { useChiropractorStore } from '~/stores/chiropractor'
 import { useUtils } from '~/composables/utils'
 
@@ -21,6 +21,7 @@ interface State {
 
 interface Getters extends StateTree {
   getPatientById(): (id: string) => Patient | undefined
+  getPatientPosture(): (tabName: string, id: PostureAnalysisKey) => PostureAnalysisState | undefined
 }
 
 interface Actions {
@@ -39,7 +40,16 @@ export const usePatientsStore = defineStore<'patients', State, Getters, Actions>
   }),
   getters: {
     getPatientById () {
-      return (id: string) => this.patients.find(patient => patient.uid === id)
+      return id => this.patients.find(patient => patient.uid === id)
+    },
+    getPatientPosture () {
+      return (tabName, id) => {
+        if (!this.currentPatient?.uid) {
+          return undefined
+        }
+        const stringState = this.currentPatient?.postureAnalysis?.[tabName]?.[id]
+        return !stringState ? undefined : JSON.parse(stringState) as PostureAnalysisState
+      }
     }
   },
   actions: {
@@ -100,6 +110,7 @@ export const usePatientsStore = defineStore<'patients', State, Getters, Actions>
     },
     setCurrentPatient (id) {
       this.currentPatient = this.getPatientById(id)
+      this.currentPatient!.postureCanvas = {}
     }
   }
 })

@@ -39,9 +39,9 @@
   </fwb-modal>
 </template>
 <script setup lang="ts">
-import { Ref } from 'vue'
+import { type Ref } from 'vue'
 import { FwbModal } from 'flowbite-vue'
-import { Patient } from '~/types/patient'
+import { type Patient } from '~/types/patient'
 import { usePatientsStore } from '~/stores/patients'
 
 defineProps({

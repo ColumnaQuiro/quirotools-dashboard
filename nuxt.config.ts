@@ -22,10 +22,7 @@ export default defineNuxtConfig({
     '/node_modules/flowbite-vue/dist/index.css'
   ],
   modules: [
-    // '@nuxt/ui',
-    'nuxt-gtag',
-    'nuxt-vuefire',
-    '@pinia/nuxt'
+    'nuxt-gtag', 'nuxt-vuefire', '@pinia/nuxt', '@nuxt/ui'
   ],
   gtag: {
     id: 'G-5Q1NTT78VS'
@@ -59,8 +56,19 @@ export default defineNuxtConfig({
       baseURL: process.env.NODE_ENV === 'development' ? 'http://localhost:3000/' : 'https://dashboard.chiro-tools.com/'
     }
   },
+  devtools: { enabled: false },
+  tailwindcss: {
+    viewer: false
+  },
+  colorMode: {
+    preference: 'light'
+  },
   experimental: {
-    inlineSSRStyles: false
+    payloadExtraction: false
+
+  },
+  features: {
+    inlineStyles: false
   },
   sourcemap: {
     server: false,

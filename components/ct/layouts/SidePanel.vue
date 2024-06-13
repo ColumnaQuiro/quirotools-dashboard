@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { Ref, ref } from 'vue'
+import { type Ref, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { getAuth, signOut } from '@firebase/auth'
 import { useSidePanelStore } from '~/stores/sidePanel'

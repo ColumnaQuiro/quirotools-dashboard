@@ -15,7 +15,7 @@
 </template>
 <script setup lang="ts">
 import { FwbInput } from 'flowbite-vue'
-import { PropType } from 'vue'
+import { type PropType } from 'vue'
 
 const props = defineProps({
   modelValue: {

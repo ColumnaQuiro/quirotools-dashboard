@@ -10,8 +10,9 @@ export type BlindSpotState = {
   rightPolygon: Path2D | null
 }
 
-export type BackPositionState = {
+export type PostureAnalysisState = {
   imageUrl: string
+  canvasDataUrl: string
   verticalDots: Position[]
   horizontalDots: Position[]
   horizontalPairs: Position[][]
@@ -21,8 +22,18 @@ export type BlindSpot = {
   [key: string]: string
 }
 
-export type BackPosition = {
-  [key: string]: string
+export type PostureAnalysisKey = 'left' | 'right'
+
+export type PostureAnalysis = {
+  [key: string]: {
+    [key in PostureAnalysisKey]?: string
+  }
+}
+
+export type PostureCanvas = {
+  [key: string]: {
+    [key in PostureAnalysisKey]?: HTMLCanvasElement
+  }
 }
 
 export interface Patient {
@@ -30,5 +41,6 @@ export interface Patient {
   name: string
   lastName: string
   blindSpot?: BlindSpot
-  backPosition?: BackPosition
+  postureAnalysis?: PostureAnalysis
+  postureCanvas?: PostureCanvas
 }

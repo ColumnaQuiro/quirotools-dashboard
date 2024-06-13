@@ -1,4 +1,4 @@
-import { defineStore, StateTree } from 'pinia'
+import { defineStore, type StateTree } from 'pinia'
 
 interface State {
   sidePanelWidth: number

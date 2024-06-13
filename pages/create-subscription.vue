@@ -21,7 +21,7 @@
 import { LAYOUTS } from '~/constants/layouts'
 import { STATICS_CDN } from '~/constants/urls'
 import { useStripe } from '~/composables/stripe'
-import { StripeCheckoutItem } from '~/types/stripe'
+import { type StripeCheckoutItem } from '~/types/stripe'
 
 definePageMeta({
   layout: LAYOUTS.LOGIN

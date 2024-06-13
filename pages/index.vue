@@ -27,7 +27,6 @@ definePageMeta({
 })
 
 const patientsStore = usePatientsStore()
-
 const showCreatePatientDialog: Ref<boolean> = ref(false)
 
 const onCreatePatientButtonClicked = () => {

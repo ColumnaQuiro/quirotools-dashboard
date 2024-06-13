@@ -1,8 +1,8 @@
-import { defineStore, StateTree } from 'pinia'
+import { defineStore, type StateTree } from 'pinia'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
-import { User } from '@firebase/auth'
+import { type User } from '@firebase/auth'
 import { useFirestore } from 'vuefire'
-import { Chiropractor } from '~/types/chiropractor'
+import { type Chiropractor } from '~/types/chiropractor'
 import { ERRORS } from '~/constants/errors'
 
 interface State {

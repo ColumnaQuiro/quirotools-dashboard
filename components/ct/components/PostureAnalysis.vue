@@ -9,15 +9,20 @@
         height="700"
         @click="handleCanvasClick"
       />
-      <fwb-file-input v-else :dropzone="true" class="posture-analysis__file-input" @update:model-value="handleFileUpload">
+      <fwb-file-input
+        v-else
+        :dropzone="true"
+        class="posture-analysis__file-input"
+        @update:model-value="handleFileUpload"
+      >
         <p class="!mt-1 text-xs text-gray-500 dark:text-gray-400">
           SVG, PNG, JPG or GIF
         </p>
       </fwb-file-input>
     </div>
-    <div class="flex flex-row">
+    <div class="flex flex-row items-center">
       <ct-components-button
-        :disabled="verticalDots.length < 2"
+        :disabled="verticalDots.length < 2 || verticalLineFinished"
         class="mr-3"
         @click="drawLine"
       >
@@ -30,15 +35,11 @@
       >
         Draw Horizontal Lines
       </ct-components-button>
-      <ct-components-button
-        size="sm"
-        class="mr-3 !rounded-3xl"
+      <UIcon
+        name="i-heroicons-x-circle-16-solid"
+        class="block text-3xl text-brand-red cursor-pointer"
         @click="clearState"
-      >
-        <svg class="w-[20px] h-[20px] text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h16M7 8v8m4-8v8M7 1h4a1 1 0 0 1 1 1v3H6V2a1 1 0 0 1 1-1ZM3 5h12v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5Z" />
-        </svg>
-      </ct-components-button>
+      />
       <fwb-spinner v-if="uploadingImage" size="12" color="green" />
     </div>
   </div>
@@ -48,12 +49,12 @@
 
 import { storeToRefs } from 'pinia'
 import { getCurrentUser } from 'vuefire'
-import { PropType, Ref } from 'vue'
+import { type PropType, type Ref } from 'vue'
 import { FwbFileInput, FwbSpinner } from 'flowbite-vue'
 import { usePatientsStore } from '~/stores/patients'
-import { BackPositionState, Patient, Position } from '~/types/patient'
+import { type PostureAnalysisState, type Patient, type Position, type PostureAnalysisKey } from '~/types/patient'
 import { useFireBaseStorage } from '~/composables/storage'
-import { PostureKey, usePostureAnalysisStore } from '~/stores/postureAnalysis'
+import { type PostureKey } from '~/stores/postureAnalysis'
 
 const firebaseStorage = useFireBaseStorage()
 const patientsStore = usePatientsStore()
@@ -69,6 +70,10 @@ const { currentPatient } = storeToRefs(patientsStore)
 
 const props = defineProps({
   id: {
+    type: String as PropType<PostureAnalysisKey>,
+    required: true
+  },
+  tabName: {
     type: String,
     required: true
   }
@@ -140,21 +145,36 @@ const handleFileUpload = (file: File) => {
     const imagePath = `back-position/${currentUser?.uid}/${currentPatient?.value?.uid}/${props.id}.${imageExt}`
     const fileData = firebaseStorage.prepareUploadFile(imagePath)
     await fileData.upload(file)
-    uploadingImage.value = false
-    imageUrl.value = fileData.url.value
-    const image = new Image()
-    image.crossOrigin = 'anonymous'
-    image.onload = () => {
-      const canvas = canvasRef.value
-      const ctx = canvas?.getContext('2d')
-      if (ctx && canvas) {
-        ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
-        ctx.lineWidth = 2
-        ctxRef.value = ctx
-        saveStateToLocalStorage()
-      }
+    // Retry logic
+    let attempts = 0
+    const maxAttempts = 10 // Maximum retry attempts
+    const retryDelay = 500 // Delay between retries in ms
+
+    while (attempts < maxAttempts && !fileData.url.value) {
+      await new Promise(resolve => setTimeout(resolve, retryDelay))
+      attempts++
+      console.log(`Retrying to get file URL, attempt: ${attempts}`)
     }
-    image.src = e.target?.result as string || ''
+
+    if (fileData.url.value) {
+      uploadingImage.value = false
+      imageUrl.value = fileData.url.value
+      const image = new Image()
+      image.crossOrigin = 'anonymous'
+      image.onload = () => {
+        const canvas = canvasRef.value
+        const ctx = canvas?.getContext('2d')
+        if (ctx && canvas) {
+          ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
+          ctx.lineWidth = 2
+          ctxRef.value = ctx
+          saveStateToLocalStorage()
+        }
+      }
+      image.src = e.target?.result as string || ''
+    } else {
+      throw new Error('Failed to obtain file URL after maximum attempts')
+    }
   }
   reader.readAsDataURL(file)
 }
@@ -243,37 +263,56 @@ const drawHorizontalLines = () => {
 }
 
 const saveStateToLocalStorage = () => {
-  if (!imageUrl.value) {
+  const patientStore = usePatientsStore()
+  if (!imageUrl.value || !patientStore.currentPatient) {
     return
   }
-  const state: BackPositionState = {
+  const state: PostureAnalysisState = {
     imageUrl: imageUrl.value,
     verticalDots,
     horizontalDots,
-    horizontalPairs
-  }
-  const postureAnalysisStore = usePostureAnalysisStore()
-  postureAnalysisStore.postures[props.id as PostureKey] = {
-    canvas: canvasRef.value,
-    imageUrl: imageUrl.value
+    horizontalPairs,
+    canvasDataUrl: canvasRef.value?.toDataURL('image/jpeg', 1.0) || ''
   }
 
+  if (!patientStore.currentPatient.postureCanvas) {
+    patientStore.currentPatient.postureCanvas = {}
+  }
+
+  if (!patientStore.currentPatient.postureCanvas[props.tabName]) {
+    patientStore.currentPatient.postureCanvas[props.tabName] = {}
+  }
+
+  patientStore.currentPatient!.postureCanvas[props.tabName][props.id as PostureKey] = canvasRef.value
+
+  if (!patientStore.currentPatient.postureAnalysis) {
+    patientStore.currentPatient.postureAnalysis = {}
+  }
+
+  if (!patientStore.currentPatient.postureAnalysis[props.tabName]) {
+    patientStore.currentPatient.postureAnalysis[props.tabName] = {}
+  }
+
+  patientStore.currentPatient.postureAnalysis[props.tabName][props.id as PostureAnalysisKey] = JSON.stringify(state)
+
   const patientStateUpdated: Partial<Patient> = {
-    backPosition: {
-      [props.id]: JSON.stringify(state)
+    postureAnalysis: {
+      [props.tabName]: {
+        [props.id as PostureAnalysisKey]: JSON.stringify(state)
+      }
     }
   }
   const patientsStore = usePatientsStore()
   patientsStore.updatePatient(patientStateUpdated)
+  // patientsStore.fetchPatients()
 }
 
 // Function to load the state from localStorage
 const loadStateFromLocalStorage = () => {
   const patientsStore = usePatientsStore()
-  const savedState = patientsStore.currentPatient?.backPosition?.[props.id]
+  const savedState = patientsStore.getPatientPosture(props.tabName, props.id)
   if (savedState) {
-    const backPositionState: BackPositionState = JSON.parse(savedState)
-    imageUrl.value = backPositionState.imageUrl
+    imageUrl.value = savedState.imageUrl
     const image = new Image()
     image.crossOrigin = 'anonymous'
     image.onload = () => {
@@ -289,10 +328,10 @@ const loadStateFromLocalStorage = () => {
         drawHorizontalLines()
       }
     }
-    image.src = backPositionState.imageUrl
-    verticalDots.splice(0, verticalDots.length, ...backPositionState.verticalDots)
-    horizontalDots.splice(0, horizontalDots.length, ...backPositionState.horizontalDots)
-    horizontalPairs.splice(0, horizontalPairs.length, ...backPositionState.horizontalPairs)
+    image.src = savedState.imageUrl
+    verticalDots.splice(0, verticalDots.length, ...savedState.verticalDots)
+    horizontalDots.splice(0, horizontalDots.length, ...savedState.horizontalDots)
+    horizontalPairs.splice(0, horizontalPairs.length, ...savedState.horizontalPairs)
   }
 }
 
