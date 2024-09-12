@@ -59,7 +59,8 @@ export const usePatientsStore = defineStore<'patients', State, Getters, Actions>
       this.patients = []
       const chiropractorStore = useChiropractorStore()
       const chiroPatients = chiropractorStore.chiropractor?.patients
-      if (!chiroPatients) {
+      if (!chiroPatients || chiroPatients.length === 0) {
+        this.isLoading = false
         return
       }
       const utils = useUtils()
