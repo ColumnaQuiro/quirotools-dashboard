@@ -336,9 +336,9 @@ const loadStateFromLocalStorage = () => {
 }
 
 const clearState = () => {
-  verticalDots.splice(0, verticalDots.length)
-  horizontalDots.splice(0, horizontalDots.length)
-  horizontalPairs.splice(0, horizontalPairs.length)
+  verticalDots.length = 0
+  horizontalDots.length = 0
+  horizontalPairs.length = 0
   canvasRef.value?.getContext('2d')?.clearRect(0, 0, canvasRef.value?.width, canvasRef.value?.height)
   imageUrl.value = undefined
 }
